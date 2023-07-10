@@ -1,0 +1,11 @@
+.env
+.vscode
+node_modules
+
+shared.http
+student.http
+tutor.http
+package-lock.json
+
+test/
+.vscode
