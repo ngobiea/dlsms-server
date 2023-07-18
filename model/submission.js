@@ -1,15 +1,15 @@
-const mongoose = require("mongoose");
-const File = require("./file");
+const mongoose = require('mongoose');
+const File = require('./file');
 const Schema = mongoose.Schema;
 
 const SubmissionSchema = new Schema({
   studentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Student",
+    ref: 'Student',
   },
   assignmentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Assignment",
+    ref: 'Assignment',
   },
   files: [File],
   grade: {
@@ -20,8 +20,8 @@ const SubmissionSchema = new Schema({
   },
   gradedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Tutor",
+    ref: 'Tutor',
   },
 });
 
-module.exports = mongoose.model("Submission", SubmissionSchema);
+module.exports = mongoose.model('Submission', SubmissionSchema);

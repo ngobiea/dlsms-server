@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Tutor = require('../../../model/tutorModel');
 const Student = require('../../../model/studentModel');
+const { statusCode } = require('../../../util/util');
 
 exports.login = async (req, res, next) => {
   let user;
@@ -10,7 +11,7 @@ exports.login = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const error = new Error('Validation failed');
-      error.statusCode = 422;
+      error.statusCode = statusCode.UNPROCESSABLE_ENTITY;
       error.data = errors.array();
       throw error;
     }
@@ -22,19 +23,21 @@ exports.login = async (req, res, next) => {
       user = await Student.findOne({ email });
     }
     if (!user) {
-      const error = new Error('Email not found click signup to register');
-      error.statusCode = 401;
+      const error = new Error(
+        'Email not found click Create Account to register'
+      );
+      error.statusCode = statusCode.UNAUTHORIZED;
       throw error;
     }
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       const error = new Error('Invalid password');
-      error.statusCode = 401;
+      error.statusCode = statusCode.UNAUTHORIZED;
       throw error;
     }
     if (!user.verified) {
       const error = new Error('Please verify your email first.');
-      error.statusCode = 401;
+      error.statusCode = statusCode.UNAUTHORIZED;
       error.type = 'verify';
       throw error;
     }
@@ -48,16 +51,17 @@ exports.login = async (req, res, next) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRATION_TIME }
     );
-    res.status(200).json({
+    res.status(statusCode.OK).json({
       userDetails: {
         userId: user._id.toString(),
         token,
         email,
       },
+      accountType,
     });
   } catch (err) {
     if (!err.statusCode) {
-      err.statusCode = 500;
+      err.statusCode = statusCode.INTERNAL_SERVER_ERROR;
     }
     next(err);
   }

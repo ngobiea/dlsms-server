@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
 const AttendanceSchema = new Schema({
   studentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Student",
+    ref: 'Student',
   },
   sessionId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -15,4 +15,4 @@ const AttendanceSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("Attendance", AttendanceSchema);
+module.exports = mongoose.model('Attendance', AttendanceSchema);

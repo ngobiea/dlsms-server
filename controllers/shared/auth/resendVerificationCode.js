@@ -3,6 +3,7 @@ const Student = require('../../../model/studentModel');
 const aws = require('../../../util/aws');
 const Tutor = require('../../../model/tutorModel');
 const emailMessages = require('../../../util/emailMessages');
+const { statusCode } = require('../../../util/util');
 
 exports.resendVerificationCode = async (req, res, next) => {
   const { email } = req.body;
@@ -13,7 +14,7 @@ exports.resendVerificationCode = async (req, res, next) => {
     if (!existingTutor && !existingStudent) {
       // If no tutor or student exists with the given email, return 404 Not Found status
       const error = new Error('No user found with this email');
-      error.statusCode = 404;
+      error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
     // Get the user (either tutor or student) based on the email
@@ -37,14 +38,14 @@ exports.resendVerificationCode = async (req, res, next) => {
       );
     } catch (error) {
       const err = new Error('Failed to send verification email');
-      err.statusCode = 500;
+      err.statusCode = statusCode.INTERNAL_SERVER_ERROR;
       throw err;
     }
 
-    res.status(200).json({ message: 'Verification email sent successfully' });
+    res.status(statusCode.OK).json({ message: 'Verification email sent successfully' });
   } catch (err) {
     if (!err.statusCode) {
-      err.statusCode = 500;
+      err.statusCode = statusCode.INTERNAL_SERVER_ERROR;
     }
     next(err);
   }

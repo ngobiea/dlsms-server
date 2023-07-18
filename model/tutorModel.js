@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
@@ -31,9 +31,9 @@ const TutorSchema = new Schema({
   classrooms: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Classroom",
+      ref: 'Classroom',
     },
   ],
 });
 
-module.exports = mongoose.model("Tutor", TutorSchema);
+module.exports = mongoose.model('Tutor', TutorSchema);

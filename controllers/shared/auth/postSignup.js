@@ -5,14 +5,14 @@ const Tutor = require('../../../model/tutorModel');
 const Student = require('../../../model/studentModel');
 const aws = require('../../../util/aws');
 const emailMessages = require('../../../util/emailMessages');
-
+const { statusCode } = require('../../../util/util');
 exports.signup = async (req, res, next) => {
   let newUser;
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const error = new Error('Validation failed');
-      error.statusCode = 422;
+      error.statusCode = statusCode.UNPROCESSABLE_ENTITY;
       error.data = errors.array();
       throw error;
     }
@@ -22,13 +22,17 @@ exports.signup = async (req, res, next) => {
     const existingStudent = await Student.findOne({ email });
 
     if (existingTutor) {
-      const error = new Error('A tutor with this email already exists');
-      error.statusCode = 409;
+      const error = new Error(
+        'A user with this email already exist. Login or choose another email'
+      );
+      error.statusCode = statusCode.CONFLICT;
       error.type = 'email';
       throw error;
     } else if (existingStudent) {
-      const error = new Error('A Student with this email already exists');
-      error.statusCode = 409;
+      const error = new Error(
+        'A user with this email already exists. Login or choose another email'
+      );
+      error.statusCode = statusCode.CONFLICT;
       error.type = 'email';
       throw error;
     }
@@ -80,10 +84,12 @@ exports.signup = async (req, res, next) => {
       err.statusCode = 500;
       throw err;
     }
-    res.status(201).json({ message: `New ${accountType} created` });
+    res
+      .status(statusCode.CREATED)
+      .json({ message: `New ${accountType} created` });
   } catch (err) {
     if (!err.statusCode) {
-      err.statusCode = 500;
+      err.statusCode = statusCode.INTERNAL_SERVER_ERROR;
     }
     next(err);
   }

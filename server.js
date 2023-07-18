@@ -1,12 +1,12 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const { createServer } = require('http');
-const { Server } = require('socket.io');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { default: mongoose } = require('mongoose');
 const cors = require('cors');
-
+const socketServer = require('./socketServer');
 const tutorRoutes = require('./routes/tutorRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const shareRoutes = require('./routes/shareRoutes');
@@ -14,19 +14,16 @@ const shareRoutes = require('./routes/shareRoutes');
 const app = express();
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, {});
+socketServer.registerSocketServer(httpServer);
 
-app.use(cors());
+app.use(
+  cors({
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  })
+);
 app.use(helmet());
 app.use(bodyParser.json());
-app.use((_req, res, next) => {
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'OPTIONS, GET, POST, PUT, PATCH, DELETE'
-  );
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
 
 app.use('/tutor', tutorRoutes);
 app.use('/student', studentRoutes);
@@ -37,9 +34,6 @@ app.use((error, _req, res, _next) => {
   const status = error.statusCode || 500;
   const { message, data, type } = error;
   res.status(status).json({ message, data, type });
-});
-io.on('connection', (_socket) => {
-  console.log('a user connected');
 });
 
 mongoose

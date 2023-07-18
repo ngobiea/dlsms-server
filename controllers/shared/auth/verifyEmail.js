@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Student = require('../../../model/studentModel');
 const Tutor = require('../../../model/tutorModel');
+const { statusCode } = require('../../../util/util');
 
 exports.verifyEmail = async (req, res, next) => {
   const { token } = req.params;
@@ -12,7 +13,7 @@ exports.verifyEmail = async (req, res, next) => {
       const tutor = await Tutor.findById(userId);
       if (!tutor) {
         const error = new Error('Tutor not found');
-        error.statusCode = 404;
+        error.statusCode = statusCode.NOT_FOUND;
         throw error;
       }
       tutor.verified = true;
@@ -21,17 +22,17 @@ exports.verifyEmail = async (req, res, next) => {
       const student = await Student.findById(userId);
       if (!student) {
         const error = new Error('Student not found');
-        error.statusCode = 404;
+        error.statusCode = statusCode.NOT_FOUND;
         throw error;
       }
       student.verified = true;
       await student.save();
     } else {
       const error = new Error('Invalid accountType');
-      error.statusCode = 400;
+      error.statusCode = statusCode.BAD_REQUEST;
       throw error;
     }
-    res.status(200).json({ message: 'Email verified' });
+    res.status(statusCode.OK).json({ message: 'Email verified' });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

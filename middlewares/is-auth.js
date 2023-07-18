@@ -20,6 +20,7 @@ module.exports = (req, _res, next) => {
     error.statusCode = 401;
     throw error;
   }
+
   req.userId = decodedToken.userId;
   req.accountType = decodedToken.accountType;
 
