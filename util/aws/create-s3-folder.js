@@ -1,21 +1,33 @@
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
-
-const s3 = new S3Client({
-  region: process.env.AWS_REGION_1,
-});
+const { PutObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
+const { s3 } = require('./s3-setup');
 
 exports.crateFolderInBucket = async (bucketName, folderName) => {
   try {
-    const command = new PutObjectCommand({
+    const headCommand = new HeadObjectCommand({
       Bucket: bucketName,
       Key: folderName + '/',
-      Body: '',
     });
-    await s3.send(command);
+    await s3.send(headCommand);
     console.log(
-      `Folder '${folderName}' created successfully in bucket '${bucketName}'.`
+      `Folder '${folderName}' already exists in bucket '${bucketName}'.`
     );
   } catch (error) {
-    console.error('Error creating folder:', err);
+    if (error.name === 'NotFound') {
+      try {
+        const putCommand = new PutObjectCommand({
+          Bucket: bucketName,
+          Key: folderName + '/',
+          Body: '',
+        });
+        await s3.send(putCommand);
+        console.log(
+          `Folder '${folderName}' created successfully in bucket '${bucketName}'.`
+        );
+      } catch (error) {
+        console.error('Error creating folder:', err);
+      }
+    } else {
+      console.error('Error checking folder:', err);
+    }
   }
 };
