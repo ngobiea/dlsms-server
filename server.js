@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
-const { createServer } = require('http');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { default: mongoose } = require('mongoose');
@@ -13,8 +12,6 @@ const shareRoutes = require('./routes/shareRoutes');
 
 const app = express();
 
-const httpServer = createServer(app);
-socketServer.registerSocketServer(httpServer);
 
 app.use(
   cors({
@@ -36,6 +33,9 @@ app.use((error, _req, res, _next) => {
   res.status(status).json({ message, data, type });
 });
 
+const httpServer = http.createServer(app);
+socketServer.registerSocketServer(httpServer);
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
@@ -46,3 +46,5 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
+
+  

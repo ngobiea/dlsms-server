@@ -4,10 +4,12 @@ const jwt = require('jsonwebtoken');
 const Tutor = require('../../../model/tutorModel');
 const Student = require('../../../model/studentModel');
 const { statusCode } = require('../../../util/util');
+const {crateFolderInBucket} = require('../../../util/aws/create-s3-folder')
 
 exports.login = async (req, res, next) => {
   let user;
   try {
+    crateFolderInBucket('dlsms-training-data','Samuella');
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const error = new Error('Validation failed');

@@ -1,10 +1,11 @@
 const express = require('express');
 const { body } = require('express-validator');
-const Student = require('../model/studentModel');
+const { login, signup } = require('../controllers/shared/shareController');
 const {
-  login,
-  signup,
-} = require('../controllers/shared/shareController');
+  verifyClassroomCode,
+  getClassroom,
+  getClassrooms
+} = require('../controllers/student/studentController');
 const router = express.Router();
 const auth = require('../middlewares/is-auth');
 
@@ -48,7 +49,15 @@ router.post(
   ],
   login
 );
-// router.get('/classrooms', auth, studentController.getClassrooms);
+router.post(
+  '/verify',
+  [body('code').trim().notEmpty().withMessage('Classroom code is require')],
+  auth,
+  verifyClassroomCode
+);
+router.get('/classroom', auth, getClassrooms);
+router.get('/classroom/:classroomId', auth, getClassroom);
+
 // router.get('/classrooms/:code', auth, studentController.getClassroom);
 
 module.exports = router;

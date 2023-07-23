@@ -8,10 +8,9 @@ const registerSocketServer = (server) => {
     },
   });
   io.use((socket, next) => {
-    console.log('before auth');
 
-    authSocket(socket, next);
-    console.log('after auth');
+      authSocket(socket, next);
+      
   });
 
   io.on('connection', (socket) => {

@@ -5,8 +5,6 @@ exports.getClassroom = async (req, res, next) => {
     let classroom;
     const { accountType } = req;
     const { classroomId } = req.params;
-    console.log(classroomId);
-    console.log(accountType);
     if (accountType === 'tutor') {
       classroom = await Classroom.findById(classroomId);
     }
