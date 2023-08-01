@@ -4,14 +4,11 @@ exports.getClassrooms = async (req, res, next) => {
   try {
     let classrooms;
     const { accountType, userId } = req;
-    console.log(accountType);
     if (accountType === 'tutor') {
       classrooms = await Classroom.find({ tutorId: userId }, 'name');
     } else if (accountType === 'student') {
-      const student = await Student.findById(userId, 'classrooms').populate(
-        'classrooms'
-      );
-      classrooms = student.classrooms
+  
+      classrooms = await Classroom.find({ students: userId }, 'name');
     }
     res.status(200).json({
       classrooms,

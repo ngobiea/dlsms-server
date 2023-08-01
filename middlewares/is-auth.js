@@ -23,6 +23,5 @@ module.exports = (req, _res, next) => {
 
   req.userId = decodedToken.userId;
   req.accountType = decodedToken.accountType;
-
   next();
 };

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const ClassSession = new mongoose.Schema({
   title: {
@@ -11,26 +11,30 @@ const ClassSession = new mongoose.Schema({
   },
   date: {
     type: Date,
-    required: true,
   },
-  startTime: {
+  startDate: {
     type: Date,
-    default: Date.now,
+  },
+  endDate: {
+    type: Date,
   },
   tutorId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Tutor",
+    ref: 'Tutor',
+    required: true,
   },
   classroomId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Classroom",
+    ref: 'Classroom',
+    required: true,
   },
   students: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Student",
+      ref: 'Student',
     },
   ],
+ 
 });
 
-module.exports = mongoose.model("ClassSession", ClassSession);
+module.exports = mongoose.model('ClassSession', ClassSession);

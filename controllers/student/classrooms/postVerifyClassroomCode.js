@@ -2,7 +2,7 @@ const Classroom = require('../../../model/classroom');
 
 exports.verifyClassroomCode = async (req, res, next) => {
   try {
-    console.log(req.body);
+  
     const { code } = req.body;
     const classroomId = await Classroom.findOne({ code }, { _id: 1 });
     if (!classroomId) {
@@ -11,7 +11,7 @@ exports.verifyClassroomCode = async (req, res, next) => {
       throw error;
     }
     res.status(200).json({
-      message: 'Classroom fetched successfully',
+      message: 'Classroom code verification pass',
       classroomId,
     });
   } catch (err) {

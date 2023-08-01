@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Student = require('../../../model/studentModel');
 const Tutor = require('../../../model/tutorModel');
-const { statusCode } = require('../../../util/util');
+const { statusCode } = require('../../../util/statusCodes');
 
 exports.verifyEmail = async (req, res, next) => {
   const { token } = req.params;

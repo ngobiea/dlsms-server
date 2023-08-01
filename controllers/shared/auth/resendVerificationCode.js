@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 const Student = require('../../../model/studentModel');
-const aws = require('../../../util/aws');
+const aws = require('../../../util/aws/ses');
 const Tutor = require('../../../model/tutorModel');
 const emailMessages = require('../../../util/emailMessages');
-const { statusCode } = require('../../../util/util');
+const { statusCode } = require('../../../util/statusCodes');
 
 exports.resendVerificationCode = async (req, res, next) => {
   const { email } = req.body;
@@ -42,7 +42,9 @@ exports.resendVerificationCode = async (req, res, next) => {
       throw err;
     }
 
-    res.status(statusCode.OK).json({ message: 'Verification email sent successfully' });
+    res
+      .status(statusCode.OK)
+      .json({ message: 'Verification email sent successfully' });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = statusCode.INTERNAL_SERVER_ERROR;

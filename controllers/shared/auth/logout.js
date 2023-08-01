@@ -1,4 +1,4 @@
-const { statusCode }= require('../../../util/util');
+const { statusCode } = require('../../../util/statusCodes');
 
 exports.logout = (_req, res, _next) => {
   // Clear the token cookie to log the user

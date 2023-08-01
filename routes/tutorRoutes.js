@@ -1,33 +1,14 @@
 const express = require('express');
-const tutorController = require('../controllers/tutor/tutorController');
 const { login, signup } = require('../controllers/shared/shareController');
 const {
   createClassroom,
   getClassroom,
   getClassrooms,
+  scheduleClassSession,
 } = require('../controllers/tutor/tutorController');
 const router = express.Router();
 const { body } = require('express-validator');
 const auth = require('../middlewares/is-auth');
-const multer = require('multer');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-});
-
-const multerS3 = require('multer-s3');
-const upload = multer({
-  storage: multerS3({
-    s3: s3Client,
-    bucket: 'dlsms-assignment',
-    metadata: function (_req, file, cb) {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: function (_req, file, cb) {
-      cb(null, Date.now().toString() + '-' + file.originalname);
-    },
-  }),
-});
 
 router.post(
   '/signup',
@@ -75,23 +56,29 @@ router.post(
   [
     body('name').trim().notEmpty().withMessage('classroom name is require'),
     body('description')
+      .trim()
       .notEmpty()
       .withMessage('Classroom description is require'),
-    body('code').notEmpty().withMessage('Failed generation of classroom code'),
   ],
   createClassroom
+);
+router.post(
+  '/classroom/schedule',
+  auth,
+  [
+    body('title').trim().notEmpty().withMessage('Schedule Title is required'),
+    body('description')
+      .trim()
+      .notEmpty()
+      .withMessage('Schedule Description is required'),
+    body('startDate').trim().notEmpty().withMessage('Start Date is required'),
+    body('endDate').trim().notEmpty().withMessage('endDate is required'),
+    body('classroomId').notEmpty().withMessage('Error crating schedule'),
+  ],
+  scheduleClassSession
 );
 
 router.get('/classroom', auth, getClassrooms);
 router.get('/classroom/:classroomId', auth, getClassroom);
-
-
-// router.post(
-//   '/create-assignment',
-//   auth,
-//   upload.array('files', 10),
-//   tutorController.createAssignment
-// );
-// router.get('/classrooms', auth, tutorController.getClassrooms);
 
 module.exports = router;

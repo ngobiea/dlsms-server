@@ -3,9 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Tutor = require('../../../model/tutorModel');
 const Student = require('../../../model/studentModel');
-const aws = require('../../../util/aws');
+const aws = require('../../../util/aws/ses');
 const emailMessages = require('../../../util/emailMessages');
-const { statusCode } = require('../../../util/util');
+const { statusCode } = require('../../../util/statusCodes');
 exports.signup = async (req, res, next) => {
   let newUser;
   try {

@@ -1,7 +1,7 @@
 const { PutObjectCommand, HeadObjectCommand } = require('@aws-sdk/client-s3');
-const { s3 } = require('./s3-setup');
+// const { s3 } = require('./s3-setup');
 
-exports.crateFolderInBucket = async (bucketName, folderName) => {
+exports.crateFolderInBucket = async (s3,bucketName, folderName) => {
   try {
     const headCommand = new HeadObjectCommand({
       Bucket: bucketName,

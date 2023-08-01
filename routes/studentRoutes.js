@@ -4,8 +4,10 @@ const { login, signup } = require('../controllers/shared/shareController');
 const {
   verifyClassroomCode,
   getClassroom,
-  getClassrooms
+  getClassrooms,
+  postJoinClassroom,
 } = require('../controllers/student/studentController');
+const { upload } = require('../middlewares/multer-s3');
 const router = express.Router();
 const auth = require('../middlewares/is-auth');
 
@@ -49,12 +51,16 @@ router.post(
   ],
   login
 );
+
 router.post(
   '/verify',
   [body('code').trim().notEmpty().withMessage('Classroom code is require')],
   auth,
   verifyClassroomCode
 );
+
+router.post('/join-classroom/:bucketName', auth, postJoinClassroom);
+
 router.get('/classroom', auth, getClassrooms);
 router.get('/classroom/:classroomId', auth, getClassroom);
 

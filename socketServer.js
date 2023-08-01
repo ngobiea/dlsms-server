@@ -1,4 +1,7 @@
 const authSocket = require('./middlewares/authSocket');
+const serverStore = require('./serverStore');
+const newConnectionHandler = require('./socketHandlers/newConnectionHandler');
+const disconnectHandler = require('./socketHandlers/disconnectHandler');
 
 const registerSocketServer = (server) => {
   const io = require('socket.io')(server, {
@@ -7,22 +10,27 @@ const registerSocketServer = (server) => {
       methods: ['GET', 'POST'],
     },
   });
-  io.use((socket, next) => {
+  serverStore.setSocketServerInstance(io);
 
-      authSocket(socket, next);
-      
+  io.use((socket, next) => {
+    authSocket(socket, next);
   });
+
+  const emitOnlineUsers = () => {
+    const onlineUsers = serverStore.getOnlineUsers();
+    io.emit('online-users', { onlineUsers });
+  };
 
   io.on('connection', (socket) => {
     console.log('user connected');
     console.log(socket.id);
 
-    // newConnectionHandler(socket, io);
-    // emitOnlineUsers();
+    newConnectionHandler(socket, io);
+    emitOnlineUsers();
 
     socket.on('disconnect', () => {
-      //   disconnectHandler(socket);
       console.log('User Disconnected');
+      disconnectHandler(socket)
     });
   });
 };

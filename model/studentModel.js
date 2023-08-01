@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const FileSchema = require("./file");
+const mongoose = require('mongoose');
+const FileSchema = require('./file');
 const Schema = mongoose.Schema;
 
 const StudentSchema = new Schema({
@@ -34,12 +34,7 @@ const StudentSchema = new Schema({
   },
   machineLearningImages: [FileSchema],
   verificationImages: [FileSchema],
-  classrooms: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Classroom",
-    },
-  ],
+
 });
 
-module.exports = mongoose.model("Student", StudentSchema);
+module.exports = mongoose.model('Student', StudentSchema);

@@ -1,10 +1,11 @@
-const mongoose = require("mongoose");
-const Sender = require("./sender");
+const mongoose = require('mongoose');
+const Sender = require('./sender');
+const File = require('./file');
 const MessageSchema = new mongoose.Schema({
   sender: Sender,
-  classroom: {
+  classroomId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Classroom",
+    ref: 'Classroom',
   },
   text: {
     type: String,
@@ -16,9 +17,19 @@ const MessageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  received: {
-    type: Boolean,
-  }
+  file: [File],
+  classSession: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ClassSession',
+  },
+  examSession: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ExamSession',
+  },
+  poll: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Poll',
+  },
 });
 
-module.exports = mongoose.model("Message", MessageSchema);
+module.exports = mongoose.model('Message', MessageSchema);

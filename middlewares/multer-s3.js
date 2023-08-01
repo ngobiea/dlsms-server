@@ -1,22 +1,29 @@
 const multer = require('multer');
-const { S3Client } = require('@aws-sdk/client-s3');
 const multerS3 = require('multer-s3');
+const { s3 } = require('../util/aws/aws-setup');
+const { crateFolderInBucket } = require('../util/aws/create-s3-folder');
 
-const s3 = new S3Client({
-  region: 'ap-south-1',
-});
+const upload = (bucketName, folderName) => {
+  crateFolderInBucket(s3, bucketName, folderName);
+  return multer({
+    storage: multerS3({
+      s3,
+      bucket: bucketName,
+      metadata: (_req, file, cb) => {
+        cb(null, { fieldName: file.fieldname });
+      },
+      key: (_req, file, cb) => {
+        if (file.originalname === 'blob') {
+          cb(null, `${folderName}/${Date.now().toString()}.jpg`);
+        } else {
+          cb(
+            null,
+            `${folderName}/${Date.now().toString()}-${file.originalname}`
+          );
+        }
+      },
+    }),
+  });
+};
 
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: 'dlsms-training-data',
-    metadata: function (req, file, cb) {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: function (req, file, cb) {
-      cb(null, 'ngobie/' + Date.now().toString() + '-' + file.originalname);
-    },
-  }),
-});
-
-module.exports = { upload };
+module.exports = { upload, multer };

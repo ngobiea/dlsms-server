@@ -6,10 +6,10 @@ const File = new Schema({
   name: {
     type: String,
   },
-  type: {
+  bucketName: {
     type: String,
   },
-  path: {
+  location: {
     type: String,
   },
   size: {

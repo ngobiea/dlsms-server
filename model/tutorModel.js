@@ -28,12 +28,6 @@ const TutorSchema = new Schema({
     required: true,
     default: false,
   },
-  classrooms: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Classroom',
-    },
-  ],
 });
 
 module.exports = mongoose.model('Tutor', TutorSchema);

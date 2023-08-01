@@ -1,8 +1,9 @@
 const { validationResult } = require('express-validator');
 const Classroom = require('../../../model/classroom');
-
+const {
+  generateClassroomCode,
+} = require('../../../util/generateClassroomCode');
 exports.createClassroom = async (req, res, next) => {
-  console.log(req.accountType);
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -11,12 +12,12 @@ exports.createClassroom = async (req, res, next) => {
       error.data = errors.array();
       throw error;
     }
-    const { name, description, code } = req.body;
+    const { name, description } = req.body;
 
     const classroom = new Classroom({
       name,
       description,
-      code,
+      code: generateClassroomCode(),
       tutorId: req.userId,
     });
     const newClassroom = await classroom.save();
