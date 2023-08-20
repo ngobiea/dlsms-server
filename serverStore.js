@@ -1,6 +1,7 @@
 const connectedUsers = new Map();
 
 let io = null;
+let rooms = {};
 
 const setSocketServerInstance = (ioInstance) => {
   io = ioInstance;

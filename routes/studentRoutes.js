@@ -6,8 +6,9 @@ const {
   getClassroom,
   getClassrooms,
   postJoinClassroom,
+  postJoin
 } = require('../controllers/student/studentController');
-const { upload } = require('../middlewares/multer-s3');
+
 const router = express.Router();
 const auth = require('../middlewares/is-auth');
 
@@ -48,22 +49,31 @@ router.post(
       .withMessage('Password is required')
       .isLength({ min: 6 })
       .withMessage('Password is too short'),
+    body('accountType').notEmpty().withMessage('Invalid Account Type'),
   ],
   login
 );
 
 router.post(
   '/verify',
-  [body('code').trim().notEmpty().withMessage('Classroom code is require')],
   auth,
+  [body('code').trim().notEmpty().withMessage('Classroom code is require')],
   verifyClassroomCode
 );
 
-router.post('/join-classroom/:bucketName', auth, postJoinClassroom);
+router.post(
+  '/join-classroom',
+  auth,
+  [
+    body('classroomId')
+      .trim()
+      .notEmpty()
+      .withMessage('Classroom ID is required'),
+  ],
+  postJoin
+);
 
 router.get('/classroom', auth, getClassrooms);
 router.get('/classroom/:classroomId', auth, getClassroom);
-
-// router.get('/classrooms/:code', auth, studentController.getClassroom);
 
 module.exports = router;

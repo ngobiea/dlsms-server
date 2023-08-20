@@ -8,7 +8,6 @@ const newConnectionHandler = async (socket, io) => {
     userId: userDetails,
   });
 
-
 };
 
 module.exports = newConnectionHandler;

@@ -3,6 +3,10 @@ const ClassSession = require('../../../model/classSession');
 const Message = require('../../../model/message');
 const { validationResult } = require('express-validator');
 const { statusCode } = require('../../../util/statusCodes');
+const {
+  handleScheduleClassSession,
+} = require('../../../socketHandlers/tutors/handleScheduleClassSession');
+
 exports.scheduleClassSession = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -15,7 +19,7 @@ exports.scheduleClassSession = async (req, res, next) => {
     const { title, description, startDate, endDate, classroomId } = req.body;
     // find classroom if exist
     const classroom = await Classroom.findById(classroomId).populate(
-      'tutorId',
+      'tutor',
       '-password -verified -email -institution -_id'
     );
     if (!classroom) {
@@ -30,7 +34,7 @@ exports.scheduleClassSession = async (req, res, next) => {
       startDate,
       endDate,
       classroomId,
-      tutorId: req.userId,
+      tutor: req.userId,
     });
 
     // save class session
@@ -38,28 +42,37 @@ exports.scheduleClassSession = async (req, res, next) => {
     // create message
     const message = new Message({
       classroomId,
-      sender: {
-        tutor: req.userId,
-      },
+      sender: req.userId,
       text: `Class session ${title} has been scheduled`,
       type: 'classSession',
       classSession: savedClassSession,
     });
     // save message
     const savedMessage = await message.save();
+    const savedSessionMessage = {
+      message: {
+        _id: savedMessage._id,
+        sender: {
+          _id: req.userId,
+          firstName: classroom.tutor.firstName,
+          lastName: classroom.tutor.lastName,
+        },
+        text: description,
+        type: message.type,
+        classSession: {
+          _id: savedClassSession._id.toString(),
+          title,
+          description,
+          startDate,
+        },
+        timestamp: message.timestamp,
+      },
+      classroomId,
+    };
+    handleScheduleClassSession(savedSessionMessage);
     // send response
     res.status(statusCode.CREATED).json({
-      savedSessionMessage: {
-        _id: savedMessage._id,
-        userId: req.userId,
-        tutorName:
-          `${classroom.tutorId.firstName} ${classroom.tutorId.lastName}`,
-        time: savedMessage.timestamp,
-        type: message.type,
-        title,
-        startDate,
-        description,
-      },
+      savedSessionMessage,
     });
   } catch (err) {
     if (!err.statusCode) {

@@ -1,10 +1,9 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Tutor = require('../../../model/tutorModel');
-const Student = require('../../../model/studentModel');
 const aws = require('../../../util/aws/ses');
 const emailMessages = require('../../../util/emailMessages');
+const User = require('../../../model/userModel');
 const { statusCode } = require('../../../util/statusCodes');
 exports.signup = async (req, res, next) => {
   let newUser;
@@ -18,17 +17,8 @@ exports.signup = async (req, res, next) => {
     }
     const { firstName, lastName, institution, accountType, email, password } =
       req.body;
-    const existingTutor = await Tutor.findOne({ email });
-    const existingStudent = await Student.findOne({ email });
-
-    if (existingTutor) {
-      const error = new Error(
-        'A user with this email already exist. Login or choose another email'
-      );
-      error.statusCode = statusCode.CONFLICT;
-      error.type = 'email';
-      throw error;
-    } else if (existingStudent) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       const error = new Error(
         'A user with this email already exists. Login or choose another email'
       );
@@ -36,43 +26,26 @@ exports.signup = async (req, res, next) => {
       error.type = 'email';
       throw error;
     }
-
     const hashedPassword = await bcrypt.hash(
       password,
       parseFloat(process.env.SALT)
     );
-
-    if (accountType === 'tutor') {
-      newUser = new Tutor({
-        firstName,
-        lastName,
-        institution,
-        email,
-        password: hashedPassword,
-        verified: false,
-      });
-      await newUser.save();
-    } else if (accountType === 'student') {
-      const { studentId } = req.body;
-      newUser = new Student({
-        firstName,
-        lastName,
-        studentId,
-        institution,
-        email,
-        password: hashedPassword,
-        verified: false,
-      });
-      await newUser.save();
-    }
-    const token = jwt.sign(
-      { userId: newUser._id, accountType },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: process.env.JWT_EXPIRATION_TIME,
-      }
-    );
+    newUser = new User({
+      firstName,
+      lastName,
+      institution,
+      email,
+      password: hashedPassword,
+      verified: false,
+      role: accountType,
+      studentId: accountType === 'student' ? req.body.studentId : ' ',
+    });
+    await newUser.save();
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRATION_TIME,
+    });
     const verificationLink = `http://localhost:${process.env.PORT}/verify-email/${token}`;
+
     try {
       aws.sendEmail(
         email,
@@ -84,6 +57,7 @@ exports.signup = async (req, res, next) => {
       err.statusCode = 500;
       throw err;
     }
+
     res
       .status(statusCode.CREATED)
       .json({ message: `New ${accountType} created` });

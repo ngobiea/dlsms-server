@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const File = require('./file');
 const Schema = mongoose.Schema;
 
 const ClassroomSchema = new Schema({
@@ -15,18 +14,18 @@ const ClassroomSchema = new Schema({
     type: String,
     required: true,
   },
-  tutorId: {
+  tutor: {
     type: Schema.Types.ObjectId,
-    ref: 'Tutor',
+    ref: 'User',
     required: true,
   },
   students: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Student',
+      ref: 'User',
     },
   ],
 });
-ClassroomSchema.index({ name: 1, tutorId: 1 }, { unique: true });
+ClassroomSchema.index({ name: 1, tutor: 1 }, { unique: true });
 
 module.exports = mongoose.model('Classroom', ClassroomSchema);

@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
-const Sender = require('./sender');
 const File = require('./file');
 const MessageSchema = new mongoose.Schema({
-  sender: Sender,
+  sender: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
   classroomId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Classroom',

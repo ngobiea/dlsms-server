@@ -9,9 +9,9 @@ const socketServer = require('./socketServer');
 const tutorRoutes = require('./routes/tutorRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const shareRoutes = require('./routes/shareRoutes');
+const { statusCode } = require('./util/statusCodes');
 
 const app = express();
-
 
 app.use(
   cors({
@@ -28,7 +28,7 @@ app.use(shareRoutes);
 
 app.use((error, _req, res, _next) => {
   console.log(error.stack);
-  const status = error.statusCode || 500;
+  const status = error.statusCode || statusCode.INTERNAL_SERVER_ERROR;
   const { message, data, type } = error;
   res.status(status).json({ message, data, type });
 });

@@ -18,9 +18,9 @@ const ClassSession = new mongoose.Schema({
   endDate: {
     type: Date,
   },
-  tutorId: {
+  tutor: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Tutor',
+    ref: 'User',
     required: true,
   },
   classroomId: {
@@ -31,10 +31,9 @@ const ClassSession = new mongoose.Schema({
   students: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Student',
+      ref: 'User',
     },
   ],
- 
 });
 
 module.exports = mongoose.model('ClassSession', ClassSession);

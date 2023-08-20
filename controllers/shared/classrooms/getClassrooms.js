@@ -1,21 +1,23 @@
 const Classroom = require('../../../model/classroom');
-const Student = require('../../../model/studentModel');
+const { statusCode } = require('../../../util/statusCodes');
+
+
 exports.getClassrooms = async (req, res, next) => {
   try {
-    let classrooms;
-    const { accountType, userId } = req;
-    if (accountType === 'tutor') {
-      classrooms = await Classroom.find({ tutorId: userId }, 'name');
-    } else if (accountType === 'student') {
-  
-      classrooms = await Classroom.find({ students: userId }, 'name');
-    }
-    res.status(200).json({
+    const { userId } = req;
+    const classrooms = await Classroom.find(
+      {
+        $or: [{ tutor: userId }, { students: userId }],
+      },
+      'name _id'
+    );
+    res.status(statusCode.OK).json({
+      message: 'Classrooms fetched successfully',
       classrooms,
     });
   } catch (err) {
     if (!err.statusCode) {
-      err.statusCode = 500;
+      err.statusCode = statusCode.INTERNAL_SERVER_ERROR;
     }
     next(err);
   }

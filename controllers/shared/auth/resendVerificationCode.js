@@ -1,35 +1,22 @@
 const jwt = require('jsonwebtoken');
-const Student = require('../../../model/studentModel');
 const aws = require('../../../util/aws/ses');
-const Tutor = require('../../../model/tutorModel');
+const User = require('../../../model/userModel');
 const emailMessages = require('../../../util/emailMessages');
 const { statusCode } = require('../../../util/statusCodes');
 
 exports.resendVerificationCode = async (req, res, next) => {
   const { email } = req.body;
   try {
-    const existingTutor = await Tutor.findOne({ email });
-    const existingStudent = await Student.findOne({ email });
-
-    if (!existingTutor && !existingStudent) {
-      // If no tutor or student exists with the given email, return 404 Not Found status
+    const user = await User.findOne({ email });
+    if (!user) {
       const error = new Error('No user found with this email');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    // Get the user (either tutor or student) based on the email
-    const user = existingTutor || existingStudent;
-
-    // Generate new JWT with user information
-    const token = jwt.sign(
-      { userId: user._id, accountType: existingTutor ? 'tutor' : 'student' },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: process.env.JWT_EXPIRATION_TIME,
-      }
-    );
-
-    const verificationLink = `http://localhost:8080/verify-email/${token}`;
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRATION_TIME,
+    });
+    const verificationLink = `http://localhost:${process.env.PORT}/verify-email/${token}`;
     try {
       aws.sendEmail(
         email,
@@ -41,7 +28,6 @@ exports.resendVerificationCode = async (req, res, next) => {
       err.statusCode = statusCode.INTERNAL_SERVER_ERROR;
       throw err;
     }
-
     res
       .status(statusCode.OK)
       .json({ message: 'Verification email sent successfully' });
@@ -52,3 +38,4 @@ exports.resendVerificationCode = async (req, res, next) => {
     next(err);
   }
 };
+

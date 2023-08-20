@@ -1,32 +1,32 @@
 const Classroom = require('../../../model/classroom');
 const Messages = require('../../../model/message');
 const { statusCode } = require('../../../util/statusCodes');
-const exclude = '-password -verified -email -institution';
 exports.getClassroom = async (req, res, next) => {
   try {
     const { classroomId } = req.params;
     const classroom = await Classroom.findById(classroomId)
-      .populate('tutorId', exclude)
+      .populate(
+        'tutor',
+        '-password -verified -email -institution -role -studentId -machineLearningImages'
+      )
       .populate(
         'students',
-        '-password -verified -institution -machineLearningImages -studentId'
+        '-password -verified -institution -studentId -role -machineLearningImages -email'
       );
     if (!classroom) {
       const error = new Error('Classroom not found');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const messages = await Messages.find({ classroomId })
-      .populate('sender.tutor', exclude)
+    const messages = await Messages.find({ classroomId }, '-classroomId -__v')
       .populate(
-        'sender.student',
-        '-password -verified -email -institution -_id'
+        'sender',
+        '-password -verified -email -institution -studentId -role'
       )
-      .populate('classSession', '-tutorId -classroomId -students')
-      .populate('examSession', '-tutorId -classroomId -students')
-      .populate('poll', '-tutorId -classroomId -students')
+      .populate('classSession', '-tutor -classroomId -students -endDate')
+      .populate('examSession', '-tutor -classroomId -students')
+      .populate('poll', '-tutor -classroomId -students')
       .sort({ timestamp: -1 });
-    
 
     res.status(statusCode.OK).json({
       message: 'Classrooms fetched successfully',
@@ -35,9 +35,9 @@ exports.getClassroom = async (req, res, next) => {
         name: classroom.name,
         description: classroom.description,
         code: classroom.code,
-        tutorId: classroom.tutorId,
+        tutor: classroom.tutor,
         students: classroom.students,
-        messages
+        messages,
       },
     });
   } catch (err) {

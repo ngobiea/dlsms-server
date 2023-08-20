@@ -3,6 +3,7 @@ const Classroom = require('../../../model/classroom');
 const {
   generateClassroomCode,
 } = require('../../../util/generateClassroomCode');
+const { statusCode } = require('../../../util/statusCodes');
 exports.createClassroom = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -18,12 +19,13 @@ exports.createClassroom = async (req, res, next) => {
       name,
       description,
       code: generateClassroomCode(),
-      tutorId: req.userId,
+      tutor: req.userId,
     });
-    const newClassroom = await classroom.save();
-    res.status(201).json({
+
+    await classroom.save();
+
+    res.status(statusCode.CREATED).json({
       message: 'Classroom created successfully',
-      classroom: newClassroom,
     });
   } catch (err) {
     if (!err.statusCode) {
