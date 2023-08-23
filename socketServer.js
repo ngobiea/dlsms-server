@@ -58,8 +58,8 @@ const registerSocketServer = (server) => {
   };
 
   io.on('connection', (socket) => {
-    // console.log('user connected');
-    // console.log(socket.id);
+    console.log('user connected');
+    console.log(socket.id);
 
     newConnectionHandler(socket, io);
     emitOnlineUsers();
