@@ -1,6 +1,30 @@
+import { createWorker } from 'mediasoup';
 
+let worker;
 
-export async function createWebRtcTransport(router) {
+// (async () => {
+//   await createNewWorker();
+// })();
+
+const createNewWorker = async () => {
+ const  worker = await createWorker({
+    rtcMinPort: 10000,
+    rtcMaxPort: 10100,
+    logLevel: 'warn',
+    logTags: ['info', 'ice', 'dtls', 'rtp', 'rtcp', 'srtp'],
+  });
+
+  console.log(`worker pid ${worker.pid}`);
+
+  worker.on('died', (error) => {
+    // This implies something serious happened, so kill the application
+    console.error('mediasoup worker has died');
+    setTimeout(() => process.exit(1), 2000); // exit in 2 seconds
+  });
+  return worker;
+};
+
+const createWebRtcTransport = async (router) => {
   return new Promise(async (resolve, reject) => {
     try {
       // https://mediasoup.org/documentation/v3/mediasoup/api/#WebRtcTransportOptions
@@ -37,10 +61,9 @@ export async function createWebRtcTransport(router) {
       reject(error);
     }
   });
-}
+};
 
-
-export const mediaCodecs = [
+const mediaCodecs = [
   {
     kind: 'audio',
     mimeType: 'audio/opus',
@@ -56,3 +79,5 @@ export const mediaCodecs = [
     },
   },
 ];
+
+export {  createWebRtcTransport, mediaCodecs,createNewWorker };

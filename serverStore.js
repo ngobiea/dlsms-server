@@ -1,4 +1,9 @@
-import { mediaCodecs, createWebRtcTransport } from './mediasoupServer';
+import {
+  mediaCodecs,
+  createWebRtcTransport,
+  createNewWorker,
+} from './mediasoupServer';
+
 const connectedUsers = new Map();
 
 let io = null;
@@ -53,7 +58,7 @@ const getOnlineUsers = () => {
   return onlineUsers;
 };
 
-const addNewClassSession = async (sessionId, userId, worker) => {
+const addNewClassSession = async (sessionId, userId) => {
   let router;
 
   let people = [];
@@ -61,6 +66,7 @@ const addNewClassSession = async (sessionId, userId, worker) => {
     router = classSessions[sessionId].router;
     people = classSessions[sessionId].participants || [];
   } else {
+    const worker = await createNewWorker();
     router = await worker.createRouter({ mediaCodecs });
   }
   console.log(`Router Id: ${router.id}`);

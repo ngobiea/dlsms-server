@@ -1,8 +1,10 @@
+import { cpus } from 'os';
+import { createServer } from 'http';
+import { readFileSync } from 'fs';
+
 import dotenv from 'dotenv';
 dotenv.config();
-import { cpus } from 'os';
 import express from 'express';
-import { createServer } from 'http';
 import bodyParser from 'body-parser';
 import helmet from 'helmet';
 import { default as mongoose } from 'mongoose';
@@ -10,11 +12,18 @@ import cors from 'cors';
 import { registerSocketServer } from './socketServer';
 import tutorRouter from './routes/tutorRouter';
 import studentRouter from './routes/StudentRouter';
-import shareRoutes from './routes/shareRoutes';
+import shareRoutes from './routes/shareRouter';
 import { statusCode } from './util/statusCodes';
+import crypto from 'crypto';
 
 console.log(Object.keys(cpus()).length);
+console.log(crypto.getCiphers().length);
+const privateKey = readFileSync('./certificates/server.key', 'utf-8');
+const certificate = readFileSync('./certificates/server.crt', 'utf-8');
+
+const credentials = { key: privateKey, cert: certificate };
 const app = express();
+const httpServer = createServer(app);
 
 app.use(
   cors({
@@ -36,7 +45,6 @@ app.use((error, _req, res, _next) => {
   res.status(status).json({ message, data, type });
 });
 
-const httpServer = createServer(app);
 registerSocketServer(httpServer);
 
 mongoose

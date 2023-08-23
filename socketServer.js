@@ -1,11 +1,7 @@
-import { createWorker as _createWorker } from 'mediasoup';
 import authSocket from './middlewares/authSocket';
-import { setSocketServerInstance, getOnlineUsers } from './serverStore';
-import newConnectionHandler from './socketHandlers/newConnectionHandler';
-import disconnectHandler from './socketHandlers/disconnectHandler';
-import { handleGetClassroom } from './socketHandlers/updates/updateClassroom';
-import { handleJoinClassSession } from './mediasoupHandlers/handleJoinClassSession';
 import {
+  setSocketServerInstance,
+  getOnlineUsers,
   addNewClassSession,
   addNewParticipantsToRoom,
   handleCreateWebRtcTransport,
@@ -14,30 +10,15 @@ import {
   handleTransportProduct,
   handleTransportRecvConnect,
   handleConsume,
-  handleConsumerResume,
+  handleConsumerResume
 } from './serverStore';
+import newConnectionHandler from './socketHandlers/newConnectionHandler';
+import disconnectHandler from './socketHandlers/disconnectHandler';
+import { handleGetClassroom } from './socketHandlers/updates/updateClassroom';
 import { Server } from 'socket.io';
 let worker;
 
-(async () => {
-  await createWorker();
-})();
-async function createWorker() {
-  worker = await _createWorker({
-    rtcMinPort: 10000,
-    rtcMaxPort: 10100,
-    logLevel: 'warn',
-    logTags: ['info', 'ice', 'dtls', 'rtp', 'rtcp', 'srtp'],
-  });
 
-  console.log(`worker pid ${worker.pid}`);
-
-  worker.on('died', (error) => {
-    // This implies something serious happened, so kill the application
-    console.error('mediasoup worker has died');
-    setTimeout(() => process.exit(1), 2000); // exit in 2 seconds
-  });
-}
 
 const registerSocketServer = (server) => {
   const io = new Server(server, {

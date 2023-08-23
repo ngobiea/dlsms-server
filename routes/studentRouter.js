@@ -1,14 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { signup } from '../controllers/shared/shareController';
-import { login } from '../controllers/shared/shareController';
-import { resendVerificationCode } from '../controllers/shared/shareController';
-import { getClassroom } from '../controllers/tutor/tutorController';
-import { getClassrooms } from '../controllers/tutor/tutorController';
-import { verifyClassroomCode } from '../controllers/student/classrooms/postVerifyClassroomCode';
-import { postJoinClassroom } from '../controllers/student/classrooms/postJoinClassroom';
-
-import { postJoin } from '../controllers/student/studentController';
+import { signup, login,getClassroom,getClassrooms } from '../controllers/shared/shareController';
+import { postJoin,verifyClassroomCode } from '../controllers/student/studentController';
 
 const studentRouter = express.Router();
 import auth from '../middlewares/is-auth';
