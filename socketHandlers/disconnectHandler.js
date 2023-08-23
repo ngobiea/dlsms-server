@@ -1,7 +1,7 @@
-const serverStore = require('../serverStore');
+import { removeConnectedUser } from '../serverStore';
 
 const disconnectHandler = (socket) => {
-  serverStore.removeConnectedUser(socket.id);
+  removeConnectedUser(socket.id);
 };
 
-module.exports = disconnectHandler;
+export default disconnectHandler;

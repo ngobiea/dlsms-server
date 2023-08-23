@@ -1,5 +1,5 @@
 
 
-exports.handleJoinClassSession = async ({sessionId},callback) => {
+export async function handleJoinClassSession({sessionId},callback) {
     
 }

@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
-const File = require("./file");
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from "mongoose";
+import File from "./file";
+const Schema = _Schema;
 
 const AssignmentSchema = new Schema({
   classroom: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: _Schema.Types.ObjectId,
     ref: "Classroom",
   },
   title: {
@@ -25,11 +25,11 @@ const AssignmentSchema = new Schema({
   },
   submissions: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: _Schema.Types.ObjectId,
       ref: "Submission",
     },
   ],
   files: [File],
 });
 
-module.exports = mongoose.model("Assignment", AssignmentSchema);
+export default model("Assignment", AssignmentSchema);

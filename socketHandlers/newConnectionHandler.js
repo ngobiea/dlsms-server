@@ -1,13 +1,11 @@
-
-const serverStore = require("../serverStore");
+import {addNewConnectedUser} from '../serverStore';
 
 const newConnectionHandler = async (socket, io) => {
   const userDetails = socket.userId;
-  serverStore.addNewConnectedUser({
+  addNewConnectedUser({
     socketId: socket.id,
     userId: userDetails,
   });
-
 };
 
-module.exports = newConnectionHandler;
+export default newConnectionHandler;

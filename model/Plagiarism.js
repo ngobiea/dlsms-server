@@ -1,13 +1,13 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from "mongoose";
+const Schema = _Schema;
 
 const Plagiarism = new Schema({
   studentId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: _Schema.Types.ObjectId,
     ref: "Student",
   },
   submissionId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: _Schema.Types.ObjectId,
     ref: "Assignment",
   },
   originalityScore: {
@@ -28,4 +28,4 @@ const Plagiarism = new Schema({
     default: Date.now,
   },
 });
-module.exports = mongoose.model("PlagiarismReport", Plagiarism);
+export default model("PlagiarismReport", Plagiarism);

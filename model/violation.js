@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import { Schema } from "mongoose";
 
-const Violation = new mongoose.Schema({
+const Violation = new Schema({
   violationType: {
     type: String,
   },
@@ -9,4 +9,4 @@ const Violation = new mongoose.Schema({
   },
 });
 
-module.exports = Violation;
+export default Violation;

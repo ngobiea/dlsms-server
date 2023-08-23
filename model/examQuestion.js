@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+import { Schema as _Schema } from "mongoose";
 
-const Schema = mongoose.Schema;
-const File = require("./file");
+const Schema = _Schema;
+import File from "./file";
 
 const ExamQuestionSchema = new Schema({
   question: {
@@ -20,4 +20,4 @@ const ExamQuestionSchema = new Schema({
   file: File,
 });
 
-module.exports = ExamQuestionSchema;
+export default ExamQuestionSchema;

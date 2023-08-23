@@ -1,13 +1,11 @@
-const Classroom = require('../../../model/classroom');
-const ClassSession = require('../../../model/classSession');
-const Message = require('../../../model/message');
-const { validationResult } = require('express-validator');
-const { statusCode } = require('../../../util/statusCodes');
-const {
-  handleScheduleClassSession,
-} = require('../../../socketHandlers/tutors/handleScheduleClassSession');
+import Classroom from '../../../model/classroom';
+import ClassSession from '../../../model/classSession';
+import Message from '../../../model/message';
+import { validationResult } from 'express-validator';
+import { statusCode } from '../../../util/statusCodes';
+import { handleScheduleClassSession } from '../../../socketHandlers/tutors/handleScheduleClassSession';
 
-exports.scheduleClassSession = async (req, res, next) => {
+export async function scheduleClassSession(req, res, next) {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -80,4 +78,4 @@ exports.scheduleClassSession = async (req, res, next) => {
     }
     next(err);
   }
-};
+}

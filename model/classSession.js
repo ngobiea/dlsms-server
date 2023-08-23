@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+import { Schema, model } from 'mongoose';
 
-const ClassSession = new mongoose.Schema({
+const ClassSession = new Schema({
   title: {
     type: String,
     required: true,
@@ -19,21 +19,21 @@ const ClassSession = new mongoose.Schema({
     type: Date,
   },
   tutor: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
   classroomId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Classroom',
     required: true,
   },
   students: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
     },
   ],
 });
 
-module.exports = mongoose.model('ClassSession', ClassSession);
+export default model('ClassSession', ClassSession);

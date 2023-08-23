@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const ExamQuestionSchema = require("./examQuestion");
+import { Schema, model } from "mongoose";
+import ExamQuestionSchema from "./examQuestion";
 
-const ExamSession = new mongoose.Schema({
+const ExamSession = new Schema({
   title: {
     type: String,
     required: true,
@@ -19,16 +19,16 @@ const ExamSession = new mongoose.Schema({
     default: Date.now,
   },
   tutorId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Tutor",
   },
   classroomId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Classroom",
   },
   students: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Student",
     },
     
@@ -36,4 +36,4 @@ const ExamSession = new mongoose.Schema({
   examQuestions: [ExamQuestionSchema],
 });
 
-module.exports = mongoose.model("ExamSession", ExamSession);
+export default model("ExamSession", ExamSession);

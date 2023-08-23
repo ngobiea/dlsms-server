@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import { Schema as _Schema, model } from "mongoose";
 
-const Schema = mongoose.Schema;
+const Schema = _Schema;
 const Options = new Schema({
   option: {
     type: String,
@@ -33,7 +33,7 @@ const PollSchema = new Schema({
     type: Date,
   },
 });
-module.exports = {
+export default {
   Poll: mongoose.model("Poll", PollSchema),
   Options,
 };

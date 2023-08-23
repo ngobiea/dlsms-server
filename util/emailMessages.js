@@ -1,4 +1,4 @@
-exports.signUpEmail = (firstName, verificationLink) => {
+export const signUpEmail = (firstName, verificationLink) => {
   return `
     <html>
   <head>

@@ -1,10 +1,10 @@
-const { S3Client } = require('@aws-sdk/client-s3');
-const { SESClient } = require('@aws-sdk/client-ses');
+import { S3Client } from '@aws-sdk/client-s3';
+import { SESClient } from '@aws-sdk/client-ses';
 
-exports.sesClient = new SESClient({
+export const sesClient = new SESClient({
   region: process.env.AWS_REGION_1,
 });
-exports.s3 = new S3Client({
+export const s3 = new S3Client({
   region: process.env.AWS_REGION_1,
 });
 

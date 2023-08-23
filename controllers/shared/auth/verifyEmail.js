@@ -1,11 +1,11 @@
-const jwt = require('jsonwebtoken');
-const User = require('../../../model/userModel');
-const { statusCode } = require('../../../util/statusCodes');
+import jsonwebtoken from 'jsonwebtoken';
+import User from '../../../model/userModel.js';
+import { statusCode } from '../../../util/statusCodes.js';
 
-exports.verifyEmail = async (req, res, next) => {
+export async function verifyEmail(req, res, next) {
   const { token } = req.params;
   try {
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const decodedToken = jsonwebtoken.verify(token, process.env.JWT_SECRET);
     const { userId } = decodedToken;
 
     const user = await User.findById(userId);
@@ -23,7 +23,7 @@ exports.verifyEmail = async (req, res, next) => {
     }
     next(err);
   }
-};
+}
 
 // exports.verifyEmail = async (req, res, next) => {
 //   const { token } = req.params;

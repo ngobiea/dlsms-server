@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const FileSchema = require('./file');
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from 'mongoose';
+import FileSchema from './file';
+const Schema = _Schema;
 
 const StudentSchema = new Schema({
   firstName: {
@@ -37,4 +37,4 @@ const StudentSchema = new Schema({
 
 });
 
-module.exports = mongoose.model('Student', StudentSchema);
+export default model('Student', StudentSchema);

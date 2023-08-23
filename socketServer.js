@@ -1,15 +1,11 @@
-const mediasoup = require('mediasoup');
-const authSocket = require('./middlewares/authSocket');
-const serverStore = require('./serverStore');
-const newConnectionHandler = require('./socketHandlers/newConnectionHandler');
-const disconnectHandler = require('./socketHandlers/disconnectHandler');
-const {
-  handleGetClassroom,
-} = require('./socketHandlers/updates/updateClassroom');
-const {
-  handleJoinClassSession,
-} = require('./mediasoupHandlers/handleJoinClassSession');
-const {
+import { createWorker as _createWorker } from 'mediasoup';
+import authSocket from './middlewares/authSocket';
+import { setSocketServerInstance, getOnlineUsers } from './serverStore';
+import newConnectionHandler from './socketHandlers/newConnectionHandler';
+import disconnectHandler from './socketHandlers/disconnectHandler';
+import { handleGetClassroom } from './socketHandlers/updates/updateClassroom';
+import { handleJoinClassSession } from './mediasoupHandlers/handleJoinClassSession';
+import {
   addNewClassSession,
   addNewParticipantsToRoom,
   handleCreateWebRtcTransport,
@@ -19,15 +15,15 @@ const {
   handleTransportRecvConnect,
   handleConsume,
   handleConsumerResume,
-} = require('./serverStore');
-
+} from './serverStore';
+import { Server } from 'socket.io';
 let worker;
 
 (async () => {
   await createWorker();
 })();
 async function createWorker() {
-  worker = await mediasoup.createWorker({
+  worker = await _createWorker({
     rtcMinPort: 10000,
     rtcMaxPort: 10100,
     logLevel: 'warn',
@@ -44,20 +40,20 @@ async function createWorker() {
 }
 
 const registerSocketServer = (server) => {
-  const io = require('socket.io')(server, {
+  const io = new Server(server, {
     cors: {
       origin: '*',
       methods: ['GET', 'POST'],
     },
   });
-  serverStore.setSocketServerInstance(io);
+  setSocketServerInstance(io);
 
   io.use((socket, next) => {
     authSocket(socket, next);
   });
 
   const emitOnlineUsers = () => {
-    const onlineUsers = serverStore.getOnlineUsers();
+    const onlineUsers = getOnlineUsers();
     io.emit('online-users', { onlineUsers });
   };
 
@@ -143,6 +139,4 @@ const registerSocketServer = (server) => {
   });
 };
 
-module.exports = {
-  registerSocketServer,
-};
+export { registerSocketServer };

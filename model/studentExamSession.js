@@ -1,16 +1,16 @@
-const mongoose = require("mongoose");
-const Violation = require("./violation");
-const BrowsingHistory = require("./browsingHistory");
-const ExamSessionRecording = require("./ExamSessionRecording");
+import { Schema as _Schema, model } from "mongoose";
+import Violation from "./violation";
+import BrowsingHistory from "./browsingHistory";
+import ExamSessionRecording from "./ExamSessionRecording";
 
-const Schema = mongoose.Schema;
+const Schema = _Schema;
 const StudentExamSession = new Schema({
   studentId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: _Schema.Types.ObjectId,
     ref: "Student",
   },
   examSessionId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: _Schema.Types.ObjectId,
     ref: "ExamSession",
   },
   status: {
@@ -38,4 +38,4 @@ const StudentExamSession = new Schema({
   },
 });
 
-module.exports = mongoose.model("StudentExamSession", StudentExamSession);
+export default model("StudentExamSession", StudentExamSession);

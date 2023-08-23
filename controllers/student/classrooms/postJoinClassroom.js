@@ -1,12 +1,10 @@
-const { upload } = require('../../../middlewares/multer-s3');
-const User = require('../../../model/userModel');
-const Classroom = require('../../../model/classroom');
-const { statusCode } = require('../../../util/statusCodes');
-const { handleValidationErrors } = require('../../../util/validation');
-const {
-  updateClassroomMembers,
-} = require('../../../socketHandlers/updates/updateClassroomMembers');
-exports.postJoinClassroom = async (req, res, next) => {
+import { upload } from '../../../middlewares/multer-s3';
+import User from '../../../model/userModel';
+import Classroom from '../../../model/classroom';
+import { statusCode } from '../../../util/statusCodes';
+import { handleValidationErrors } from '../../../util/validation';
+import { updateClassroomMembers } from '../../../socketHandlers/updates/updateClassroomMembers';
+export const postJoinClassroom = async (req, res, next) => {
   const { userId } = req;
   upload(process.env.TRAINING_BUCKET, userId).array('files')(
     req,
@@ -62,7 +60,7 @@ exports.postJoinClassroom = async (req, res, next) => {
             await student.save();
             await classroom.save();
             // update classroom members
-            updateClassroomMembers(classroom,student);
+            updateClassroomMembers(classroom, student);
             res
               .status(statusCode.CREATED)
               .json({ message: 'success', students: classroom.students });

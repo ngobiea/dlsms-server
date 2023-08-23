@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+import { Schema as _Schema, model } from 'mongoose';
 
-const Schema = mongoose.Schema;
+const Schema = _Schema;
 
 const TutorSchema = new Schema({
   firstName: {
@@ -30,4 +30,4 @@ const TutorSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('Tutor', TutorSchema);
+export default model('Tutor', TutorSchema);

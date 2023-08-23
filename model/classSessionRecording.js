@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
-const FileSchema = require("./file");
+import { Schema as _Schema, model } from "mongoose";
+const Schema = _Schema;
+import FileSchema from "./file";
 
 const ClassSessionRecordingSchema = new Schema({
   classSession: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: _Schema.Types.ObjectId,
     ref: "ClassroomSession",
   },
   file: FileSchema,
@@ -16,4 +16,4 @@ const ClassSessionRecordingSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("ClassSessionRecording",ClassSessionRecordingSchema);
+export default model("ClassSessionRecording",ClassSessionRecordingSchema);

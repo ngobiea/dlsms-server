@@ -1,12 +1,11 @@
-const { validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { statusCode } = require('../../../util/statusCodes');
-const User = require('../../../model/userModel');
+import { validationResult } from 'express-validator';
+import bcryptjs from 'bcryptjs';
+import jsonwebtoken from 'jsonwebtoken';
+import { statusCode } from '../../../util/statusCodes.js';
+import User from '../../../model/userModel.js';
 
-exports.login = async (req, res, next) => {
+export const login = async (req, res, next) => {
   try {
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const error = new Error('Validation failed');
@@ -31,7 +30,7 @@ exports.login = async (req, res, next) => {
       error.statusCode = statusCode.UNAUTHORIZED;
       throw error;
     }
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcryptjs.compare(password, user.password);
     if (!passwordMatch) {
       const error = new Error('Invalid password');
       error.statusCode = statusCode.UNAUTHORIZED;
@@ -43,7 +42,7 @@ exports.login = async (req, res, next) => {
       error.type = 'verify';
       throw error;
     }
-    const token = jwt.sign(
+    const token = jsonwebtoken.sign(
       {
         email,
         userId: user._id.toString(),

@@ -1,13 +1,11 @@
-const User = require('../../../model/userModel');
-const Classroom = require('../../../model/classroom');
-const { statusCode } = require('../../../util/statusCodes');
-const { validationResult } = require('express-validator');
-const { handleValidationErrors } = require('../../../util/validation');
-const {
-  updateClassroomMembers,
-} = require('../../../socketHandlers/updates/updateClassroomMembers');
+import User from '../../../model/userModel';
+import Classroom from '../../../model/classroom';
+import { statusCode } from '../../../util/statusCodes';
+import { validationResult } from 'express-validator';
+import { handleValidationErrors } from '../../../util/validation';
+import { updateClassroomMembers } from '../../../socketHandlers/updates/updateClassroomMembers';
 
-exports.postJoin = async (req, res, next) => {
+export const postJoin = async (req, res, next) => {
   const { userId } = req;
   handleValidationErrors(req, res, async () => {
     try {

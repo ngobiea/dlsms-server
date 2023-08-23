@@ -1,4 +1,4 @@
-const { mediaCodecs, createWebRtcTransport } = require('./mediasoupServer');
+import { mediaCodecs, createWebRtcTransport } from './mediasoupServer';
 const connectedUsers = new Map();
 
 let io = null;
@@ -242,11 +242,11 @@ const handleConsume = async (
 const handleConsumerResume = async ({ serverConsumerId }) => {
   const consumer = consumers.find(
     (consumerData) => consumerData.consumer.id === serverConsumerId
-  )
+  );
   await consumer.resume();
 };
 
-module.exports = {
+export {
   addNewConnectedUser,
   removeConnectedUser,
   getActiveConnections,

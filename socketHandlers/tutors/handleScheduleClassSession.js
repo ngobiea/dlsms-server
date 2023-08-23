@@ -1,5 +1,5 @@
-const { getSocketServerInstance } = require('../../serverStore');
-exports.handleScheduleClassSession = async (savedSessionMessage) => {
+import { getSocketServerInstance } from '../../serverStore';
+export async function handleScheduleClassSession(savedSessionMessage) {
   const io = getSocketServerInstance();
   io.emit('classroom-schedule-message', savedSessionMessage);
-};
+}

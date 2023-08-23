@@ -1,6 +1,6 @@
-const Assignment = require('../../../model/assignment');
+import Assignment from '../../../model/assignment';
 
-exports.createAssignment = async (req, res, _next) => {
+export async function createAssignment(req, res, _next) {
   try {
     // Extract the data from the request body
     const { title, instruction, points, dueDate, dueTime, classroomId } =
@@ -32,4 +32,4 @@ exports.createAssignment = async (req, res, _next) => {
   } catch (err) {
     res.status(500).json({ message: 'An error occurred' });
   }
-};
+}

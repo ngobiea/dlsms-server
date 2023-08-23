@@ -1,16 +1,16 @@
-const mongoose = require("mongoose");
+import { Schema as _Schema } from "mongoose";
 
-const Schema = mongoose.Schema;
+const Schema = _Schema;
 
 const Sender = new Schema({
   tutor: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: _Schema.Types.ObjectId,
     ref: "Tutor",
   },
   student: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: _Schema.Types.ObjectId,
     ref: "Student",
   },
 });
 
-module.exports = Sender;
+export default Sender;

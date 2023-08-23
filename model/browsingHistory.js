@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+import { Schema } from 'mongoose';
 
-const BrowsingHistory = new mongoose.Schema({
+const BrowsingHistory = new Schema({
   title: {
     type: String,
   },
@@ -15,4 +15,4 @@ const BrowsingHistory = new mongoose.Schema({
   },
 });
 
-module.exports = BrowsingHistory
+export default BrowsingHistory

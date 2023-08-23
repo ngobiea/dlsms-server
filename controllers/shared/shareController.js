@@ -1,13 +1,13 @@
-const {signup} = require('./auth/postSignup');
-const {login} = require('./auth/postLogin');
-const {logout} = require('./auth/logout');
-const {resendVerificationCode} = require('./auth/resendVerificationCode');
-const {verifyEmail} = require('./auth/verifyEmail');
+export { signup } from './auth/postSignup.js';
+export { login } from './auth/postLogin.js';
+export { logout } from './auth/logout.js';
+export { resendVerificationCode } from './auth/resendVerificationCode.js';
+export { verifyEmail } from './auth/verifyEmail.js';
 
-module.exports = {
-  login,
-  signup,
-  resendVerificationCode,
-  verifyEmail,
-  logout
-};
+// export {
+//   login,
+//   signup,
+//   resendVerificationCode,
+//   verifyEmail,
+//   logout
+// };

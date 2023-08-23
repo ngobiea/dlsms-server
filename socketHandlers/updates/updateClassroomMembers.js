@@ -1,6 +1,10 @@
-const serverStore = require('../../serverStore');
+import {getSocketServerInstance} from '../../serverStore';
 
-exports.updateClassroomMembers = async (classroom, students, studentId) => {
+export const updateClassroomMembers = async (
+  classroom,
+  students,
+  studentId
+) => {
   try {
     const io = serverStore.getSocketServerInstance();
     const data = {

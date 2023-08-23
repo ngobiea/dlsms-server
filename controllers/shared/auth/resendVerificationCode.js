@@ -1,10 +1,10 @@
-const jwt = require('jsonwebtoken');
-const aws = require('../../../util/aws/ses');
-const User = require('../../../model/userModel');
-const emailMessages = require('../../../util/emailMessages');
-const { statusCode } = require('../../../util/statusCodes');
+import jsonwebtoken from 'jsonwebtoken';
+import { sendEmail } from '../../../util/aws/ses';
+import User from '../../../model/userModel.js';
+import { signUpEmail } from '../../../util/emailMessages.js';
+import { statusCode } from '../../../util/statusCodes.js';
 
-exports.resendVerificationCode = async (req, res, next) => {
+export const  resendVerificationCode = async (req, res, next)=> {
   const { email } = req.body;
   try {
     const user = await User.findOne({ email });
@@ -13,15 +13,19 @@ exports.resendVerificationCode = async (req, res, next) => {
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRATION_TIME,
-    });
+    const token = jsonwebtoken.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRATION_TIME,
+      }
+    );
     const verificationLink = `http://localhost:${process.env.PORT}/verify-email/${token}`;
     try {
-      aws.sendEmail(
+      sendEmail(
         email,
         'Verify Your Email to Join Us!',
-        emailMessages.signUpEmail(user.firstName, verificationLink)
+        signUpEmail(user.firstName, verificationLink)
       );
     } catch (error) {
       const err = new Error('Failed to send verification email');
@@ -37,5 +41,5 @@ exports.resendVerificationCode = async (req, res, next) => {
     }
     next(err);
   }
-};
+}
 

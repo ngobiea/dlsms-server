@@ -1,8 +1,7 @@
-const Classroom = require('../../../model/classroom');
-const { statusCode } = require('../../../util/statusCodes');
+import Classroom from '../../../model/classroom';
+import { statusCode } from '../../../util/statusCodes';
 
-
-exports.getClassrooms = async (req, res, next) => {
+export const getClassrooms = async (req, res, next) => {
   try {
     const { userId } = req;
     const classrooms = await Classroom.find(

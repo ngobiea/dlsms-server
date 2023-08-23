@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import { Schema as _Schema } from 'mongoose';
 
-const Schema = mongoose.Schema;
+const Schema = _Schema;
 
 const File = new Schema({
   name: {
@@ -19,4 +19,4 @@ const File = new Schema({
     type: String,
   },
 });
-module.exports = File;
+export default File;

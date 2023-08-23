@@ -1,7 +1,7 @@
-const Classroom = require('../../model/classroom');
-const Messages = require('../../model/message');
+import Classroom from '../../model/classroom';
+import Message from '../../model/message';
 
-exports.handleGetClassroom = async (classroomId, socket) => {
+export const handleGetClassroom = async (classroomId, socket) => {
   const classroom = await Classroom.findById(
     classroomId,
     '-name -code -description -tutor'
@@ -9,7 +9,7 @@ exports.handleGetClassroom = async (classroomId, socket) => {
     'students',
     '-password -verified -institution -studentId -role -machineLearningImages -email'
   );
-  const messages = await Messages.find({ classroomId }, '-classroomId -__v')
+  const messages = await Message.find({ classroomId }, '-classroomId -__v')
     .populate(
       'sender',
       '-password -verified -email -institution -studentId -role'

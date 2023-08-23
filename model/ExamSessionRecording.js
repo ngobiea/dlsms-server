@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const FileSchema = require("./file");
-const Schema = mongoose.Schema;
+import { Schema as _Schema } from "mongoose";
+import FileSchema from "./file";
+const Schema = _Schema;
 
 const ExamSessionRecordingSchema = new Schema({
   file: FileSchema,
@@ -12,4 +12,4 @@ const ExamSessionRecordingSchema = new Schema({
   },
 });
 
-module.exports = ExamSessionRecordingSchema;
+export default ExamSessionRecordingSchema;

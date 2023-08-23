@@ -1,10 +1,8 @@
-const { validationResult } = require('express-validator');
-const Classroom = require('../../../model/classroom');
-const {
-  generateClassroomCode,
-} = require('../../../util/generateClassroomCode');
-const { statusCode } = require('../../../util/statusCodes');
-exports.createClassroom = async (req, res, next) => {
+import { validationResult } from 'express-validator';
+import Classroom from '../../../model/classroom.js';
+import { generateClassroomCode } from '../../../util/generateClassroomCode.js';
+import { statusCode } from '../../../util/statusCodes.js';
+export async function createClassroom(req, res, next) {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -33,4 +31,4 @@ exports.createClassroom = async (req, res, next) => {
     }
     next(err);
   }
-};
+}

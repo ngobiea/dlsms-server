@@ -1,16 +1,17 @@
-const express = require('express');
-const { login, signup } = require('../controllers/shared/shareController');
-const {
+import { Router } from 'express';
+import {login,signup} from '../controllers/shared/shareController.js';
+import {
   createClassroom,
   getClassroom,
   getClassrooms,
   scheduleClassSession,
-} = require('../controllers/tutor/tutorController');
-const router = express.Router();
-const { body } = require('express-validator');
-const auth = require('../middlewares/is-auth');
+} from '../controllers/tutor/tutorController.js';
 
-router.post(
+const tutorRouter = Router();
+import { body } from 'express-validator';
+import auth from '../middlewares/is-auth.js';
+
+tutorRouter.post(
   '/signup',
   [
     body('firstName').trim().notEmpty().withMessage('First Name is required'),
@@ -33,7 +34,7 @@ router.post(
   ],
   signup
 );
-router.post(
+tutorRouter.post(
   '/login',
   [
     body('email')
@@ -50,7 +51,7 @@ router.post(
   login
 );
 
-router.post(
+tutorRouter.post(
   '/classroom',
   auth,
   [
@@ -62,7 +63,7 @@ router.post(
   ],
   createClassroom
 );
-router.post(
+tutorRouter.post(
   '/classroom/schedule',
   auth,
   [
@@ -78,7 +79,7 @@ router.post(
   scheduleClassSession
 );
 
-router.get('/classroom', auth, getClassrooms);
-router.get('/classroom/:classroomId', auth, getClassroom);
+tutorRouter.get('/classroom', auth, getClassrooms);
+tutorRouter.get('/classroom/:classroomId', auth, getClassroom);
 
-module.exports = router;
+export default tutorRouter;

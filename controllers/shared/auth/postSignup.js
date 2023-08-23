@@ -1,11 +1,13 @@
-const { validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const aws = require('../../../util/aws/ses');
-const emailMessages = require('../../../util/emailMessages');
-const User = require('../../../model/userModel');
-const { statusCode } = require('../../../util/statusCodes');
-exports.signup = async (req, res, next) => {
+import { validationResult } from 'express-validator';
+
+import bcrypt from 'bcryptjs';
+
+import jsonwebtoken from 'jsonwebtoken';
+import { sendEmail } from '../../../util/aws/ses.js';
+import { signUpEmail } from '../../../util/emailMessages.js';
+import User from '../../../model/userModel.js';
+import {statusCode} from '../../../util/statusCodes.js';
+export const signup = async (req, res, next)=> {
   let newUser;
   try {
     const errors = validationResult(req);
@@ -41,16 +43,16 @@ exports.signup = async (req, res, next) => {
       studentId: accountType === 'student' ? req.body.studentId : ' ',
     });
     await newUser.save();
-    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
+    const token =jsonwebtoken.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRATION_TIME,
     });
     const verificationLink = `http://localhost:${process.env.PORT}/verify-email/${token}`;
 
     try {
-      aws.sendEmail(
+      sendEmail(
         email,
         'Verify Your Email to Join Us!',
-        emailMessages.signUpEmail(firstName, verificationLink)
+        signUpEmail(firstName, verificationLink)
       );
     } catch (error) {
       const err = new Error('Failed to send verification email');
@@ -67,4 +69,4 @@ exports.signup = async (req, res, next) => {
     }
     next(err);
   }
-};
+}

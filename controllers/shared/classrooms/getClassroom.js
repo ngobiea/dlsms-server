@@ -1,10 +1,10 @@
-const Classroom = require('../../../model/classroom');
-const Messages = require('../../../model/message');
-const { statusCode } = require('../../../util/statusCodes');
-exports.getClassroom = async (req, res, next) => {
+import ClassRoom from '../../../model/classroom';
+import Message from '../../../model/message';
+import { statusCode } from '../../../util/statusCodes';
+export  const getClassroom = async (req, res, next)=> {
   try {
     const { classroomId } = req.params;
-    const classroom = await Classroom.findById(classroomId)
+    const classroom = await ClassRoom.findById(classroomId)
       .populate(
         'tutor',
         '-password -verified -email -institution -role -studentId -machineLearningImages'
@@ -18,7 +18,7 @@ exports.getClassroom = async (req, res, next) => {
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const messages = await Messages.find({ classroomId }, '-classroomId -__v')
+    const messages = await Message.find({ classroomId }, '-classroomId -__v')
       .populate(
         'sender',
         '-password -verified -email -institution -studentId -role'
@@ -46,4 +46,4 @@ exports.getClassroom = async (req, res, next) => {
     }
     next(err);
   }
-};
+}

@@ -1,14 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const {
+import { Router } from 'express';
+const router = Router();
+import {
   resendVerificationCode,
   verifyEmail,
   logout
-} = require('../controllers/shared/shareController');
+} from '../controllers/shared/shareController';
 
 router.get('/verify-email/:token', verifyEmail);
 router.post('/resend-verification-code', resendVerificationCode);
 router.post('/logout', logout);
 
-
-module.exports = router;
+export default router;

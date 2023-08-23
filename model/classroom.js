@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from 'mongoose';
+const Schema = _Schema;
 
 const ClassroomSchema = new Schema({
   name: {
@@ -28,4 +28,4 @@ const ClassroomSchema = new Schema({
 });
 ClassroomSchema.index({ name: 1, tutor: 1 }, { unique: true });
 
-module.exports = mongoose.model('Classroom', ClassroomSchema);
+export default model('Classroom', ClassroomSchema);

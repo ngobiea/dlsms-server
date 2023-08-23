@@ -1,6 +1,6 @@
-const { validationResult } = require('express-validator');
-const { statusCode } = require('./statusCodes');
-exports.handleValidationErrors = (req, _res, next) => {
+import { validationResult } from 'express-validator';
+import { statusCode } from './statusCodes';
+export function handleValidationErrors(req, _res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed');
@@ -9,4 +9,4 @@ exports.handleValidationErrors = (req, _res, next) => {
     return next(error);
   }
   return next();
-};
+}

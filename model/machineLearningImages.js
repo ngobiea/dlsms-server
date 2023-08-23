@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
-const File = require('./file');
-const MachineLearningImage = new mongoose.Schema({
+import { Schema, model } from 'mongoose';
+import File from './file';
+const MachineLearningImage = new Schema({
   studentId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Student',
   },
   machineLearningImages: [File],
   verificationImages: [File],
 });
-module.exports = mongoose.model('MachineLearningImage', MachineLearningImage);
+export default model('MachineLearningImage', MachineLearningImage);

@@ -1,9 +1,9 @@
-const { verifyClassroomCode } = require('./classrooms/postVerifyClassroomCode');
-const { getClassrooms } = require('../shared/classrooms/getClassrooms');
-const { getClassroom } = require('../shared/classrooms/getClassroom');
-const { postJoinClassroom } = require('./classrooms/postJoinClassroom');
-const { postJoin } = require('./classrooms/postJoin');
-module.exports = {
+import { verifyClassroomCode } from './classrooms/postVerifyClassroomCode';
+import { getClassrooms } from '../shared/classrooms/getClassrooms';
+import { getClassroom } from '../shared/classrooms/getClassroom';
+import { postJoinClassroom } from './classrooms/postJoinClassroom';
+import { postJoin } from './classrooms/postJoin';
+export  {
   verifyClassroomCode,
   getClassroom,
   getClassrooms,

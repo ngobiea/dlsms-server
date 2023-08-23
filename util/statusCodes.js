@@ -1,4 +1,4 @@
-exports.statusCode = {
+export const statusCode = {
   OK: 200,
   CREATED: 201,
   ACCEPTED: 202,
@@ -13,3 +13,5 @@ exports.statusCode = {
   NOT_IMPLEMENTED: 501,
   SERVICE_UNAVAILABLE: 503,
 };
+
+

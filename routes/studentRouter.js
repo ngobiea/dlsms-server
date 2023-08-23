@@ -1,18 +1,19 @@
-const express = require('express');
-const { body } = require('express-validator');
-const { login, signup } = require('../controllers/shared/shareController');
-const {
-  verifyClassroomCode,
-  getClassroom,
-  getClassrooms,
-  postJoinClassroom,
-  postJoin
-} = require('../controllers/student/studentController');
+import express from 'express';
+import { body } from 'express-validator';
+import { signup } from '../controllers/shared/shareController';
+import { login } from '../controllers/shared/shareController';
+import { resendVerificationCode } from '../controllers/shared/shareController';
+import { getClassroom } from '../controllers/tutor/tutorController';
+import { getClassrooms } from '../controllers/tutor/tutorController';
+import { verifyClassroomCode } from '../controllers/student/classrooms/postVerifyClassroomCode';
+import { postJoinClassroom } from '../controllers/student/classrooms/postJoinClassroom';
 
-const router = express.Router();
-const auth = require('../middlewares/is-auth');
+import { postJoin } from '../controllers/student/studentController';
 
-router.post(
+const studentRouter = express.Router();
+import auth from '../middlewares/is-auth';
+
+studentRouter.post(
   '/signup',
   [
     body('firstName').trim().notEmpty().withMessage('First Name is required'),
@@ -36,7 +37,7 @@ router.post(
   ],
   signup
 );
-router.post(
+studentRouter.post(
   '/login',
   [
     body('email')
@@ -54,14 +55,14 @@ router.post(
   login
 );
 
-router.post(
+studentRouter.post(
   '/verify',
   auth,
   [body('code').trim().notEmpty().withMessage('Classroom code is require')],
   verifyClassroomCode
 );
 
-router.post(
+studentRouter.post(
   '/join-classroom',
   auth,
   [
@@ -73,7 +74,7 @@ router.post(
   postJoin
 );
 
-router.get('/classroom', auth, getClassrooms);
-router.get('/classroom/:classroomId', auth, getClassroom);
+studentRouter.get('/classroom', auth, getClassrooms);
+studentRouter.get('/classroom/:classroomId', auth, getClassroom);
 
-module.exports = router;
+export default studentRouter ;
