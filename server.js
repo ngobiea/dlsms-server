@@ -1,4 +1,6 @@
 require('dotenv').config();
+const os = require('os')
+
 const express = require('express');
 const http = require('http');
 const bodyParser = require('body-parser');
@@ -11,6 +13,8 @@ const studentRoutes = require('./routes/studentRoutes');
 const shareRoutes = require('./routes/shareRoutes');
 const { statusCode } = require('./util/statusCodes');
 
+
+console.log(Object.keys(os.cpus()).length);
 const app = express();
 
 app.use(
@@ -36,6 +40,7 @@ app.use((error, _req, res, _next) => {
 const httpServer = http.createServer(app);
 socketServer.registerSocketServer(httpServer);
 
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
@@ -46,3 +51,4 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
+
