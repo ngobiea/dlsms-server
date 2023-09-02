@@ -1,11 +1,11 @@
-import { Schema as _Schema, model } from "mongoose";
-import File from "./file";
+import { Schema as _Schema, model } from 'mongoose';
+import File from './file';
 const Schema = _Schema;
 
 const AssignmentSchema = new Schema({
   classroom: {
     type: _Schema.Types.ObjectId,
-    ref: "Classroom",
+    ref: 'Classroom',
   },
   title: {
     type: String,
@@ -26,10 +26,10 @@ const AssignmentSchema = new Schema({
   submissions: [
     {
       type: _Schema.Types.ObjectId,
-      ref: "Submission",
+      ref: 'Submission',
     },
   ],
   files: [File],
 });
 
-export default model("Assignment", AssignmentSchema);
+export default model('Assignment', AssignmentSchema);

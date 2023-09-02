@@ -1,37 +1,12 @@
-import { createWorker } from 'mediasoup';
-
-let worker;
-
-// (async () => {
-//   await createNewWorker();
-// })();
-
-const createNewWorker = async () => {
- const  worker = await createWorker({
-    rtcMinPort: 10000,
-    rtcMaxPort: 10100,
-    logLevel: 'warn',
-    logTags: ['info', 'ice', 'dtls', 'rtp', 'rtcp', 'srtp'],
-  });
-
-  console.log(`worker pid ${worker.pid}`);
-
-  worker.on('died', (error) => {
-    // This implies something serious happened, so kill the application
-    console.error('mediasoup worker has died');
-    setTimeout(() => process.exit(1), 2000); // exit in 2 seconds
-  });
-  return worker;
-};
-
 const createWebRtcTransport = async (router) => {
   return new Promise(async (resolve, reject) => {
     try {
       // https://mediasoup.org/documentation/v3/mediasoup/api/#WebRtcTransportOptions
-      const webRtcTransport_options = {
+      const webRtcTransportOptions = {
         listenIps: [
           {
-            ip: '0.0.0.0', // replace with relevant IP address
+            // replace with relevant IP address
+            ip: '192.168.18.64',
             // announcedIp: ' 192.168.18.64',
           },
         ],
@@ -41,8 +16,8 @@ const createWebRtcTransport = async (router) => {
       };
 
       // https://mediasoup.org/documentation/v3/mediasoup/api/#router-createWebRtcTransport
-      let transport = await router.createWebRtcTransport(
-        webRtcTransport_options
+      const transport = await router.createWebRtcTransport(
+        webRtcTransportOptions
       );
       console.log(`transport id: ${transport.id}`);
 
@@ -55,9 +30,9 @@ const createWebRtcTransport = async (router) => {
       transport.on('close', () => {
         console.log('transport closed');
       });
-
       resolve(transport);
     } catch (error) {
+      console.log(error);
       reject(error);
     }
   });
@@ -80,4 +55,4 @@ const mediaCodecs = [
   },
 ];
 
-export {  createWebRtcTransport, mediaCodecs,createNewWorker };
+export { createWebRtcTransport, mediaCodecs };

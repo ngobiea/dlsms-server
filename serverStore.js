@@ -1,17 +1,52 @@
-import {
-  mediaCodecs,
-  createWebRtcTransport,
-  createNewWorker,
-} from './mediasoupServer';
+import { mediaCodecs, createWebRtcTransport } from './mediasoupServer';
 
 const connectedUsers = new Map();
 
 let io = null;
-let rooms = {};
-let classSessions = {};
-let participants = {};
+
+/*
+let classSessions = {
+  sessionId1: {
+    Router,
+    participants: [userId1, userId2... ]
+  },
+  ....
+}
+*/
+const classSessions = {};
+/*
+let participants = {
+    userId: {
+      sessionId,
+      socket,
+      transports: [id1, id2,]
+      producers: [id1, id2,] },
+      consumers = [id1, id2,],
+      peerDetails
+  }, ...
+}
+*/
+const participants = {};
+/*
+let transports =[
+  { userId, SessionId1, transport, consumer },
+  ...
+]
+*/
 let transports = [];
+/*
+let producers = [
+  { userId1, sessionId, producer, },
+  ...
+]
+*/
 let producers = [];
+/*
+let consumers = [
+  { userId1, roomName1, consumer, },
+  ...
+]
+ */
 let consumers = [];
 
 const setSocketServerInstance = (ioInstance) => {
@@ -54,42 +89,69 @@ const getOnlineUsers = () => {
   connectedUsers.forEach((value, key) => {
     onlineUsers.push({ socketId: key, userId: value.userId });
   });
-
   return onlineUsers;
 };
 
-const addNewClassSession = async (sessionId, userId) => {
-  let router;
+const removeItems = (items, userId, type) => {
+  items.forEach((item) => {
+    if (item.userId === userId) {
+      item[type].close();
+    }
+  });
+  items = items.filter((item) => item.userId !== userId);
 
-  let people = [];
-  if (classSessions[sessionId]) {
-    router = classSessions[sessionId].router;
-    people = classSessions[sessionId].participants || [];
-  } else {
-    const worker = await createNewWorker();
-    router = await worker.createRouter({ mediaCodecs });
-  }
-  console.log(`Router Id: ${router.id}`);
-  console.log(`No of participants: ${people.length}`);
-  classSessions[sessionId] = {
-    router,
-    participants: [...people, userId],
-  };
-  return router;
+  return items;
 };
-const addNewParticipantsToRoom = (socket, userId, sessionId) => {
-  participants[userId] = {
+const handleDisconnect = (userId) => {
+  console.log('peer disconnected');
+  consumers = removeItems(consumers, userId, 'consumer');
+  producers = removeItems(producers, userId, 'producer');
+  transports = removeItems(transports, userId, 'transport');
+};
+
+const handleJoinSession = async ({ sessionId }, callback, socket, worker) => {
+  const router = await createSession(sessionId, socket.userId, worker);
+
+  participants[socket.userId] = {
     socket,
     sessionId,
     transports: [],
     producers: [],
     consumers: [],
+    participantDetails: {
+      name: '',
+      isTutor: false,
+    },
   };
+  const rtpCapabilities = router.rtpCapabilities;
+  callback({ rtpCapabilities });
 };
 
-const handleCreateWebRtcTransport = async ({ consumer }, callback, socket) => {
-  const sessionId = participants[socket.userId].sessionId;
+const createSession = async (sessionId, userId, worker) => {
+  let router;
+  let peers = [];
+  if (classSessions[sessionId]) {
+    router = classSessions[sessionId].router;
+    peers = classSessions[sessionId].peers || [];
+  } else {
+    router = await worker.createRouter({ mediaCodecs });
+  }
+  console.log(`Router ID: ${router.id}`, peers.length);
+
+  classSessions[sessionId] = {
+    router,
+    peers: [...peers, userId],
+  };
+  return router;
+};
+
+const handleCreateTransport = async ({ consumer }, callback, userId) => {
+  console.log(`Is this a sender request? ${consumer}`);
+
+  const sessionId = participants[userId].sessionId;
+
   const router = classSessions[sessionId].router;
+
   createWebRtcTransport(router)
     .then((transport) => {
       callback({
@@ -100,172 +162,226 @@ const handleCreateWebRtcTransport = async ({ consumer }, callback, socket) => {
           dtlsParameters: transport.dtlsParameters,
         },
       });
-      addTransport(transport, sessionId, consumer);
+      addTransport(transport, sessionId, consumer, userId);
     })
     .catch((error) => {
+      callback({
+        serverParams: {
+          error,
+        },
+      });
       console.log(error);
     });
 };
 
-const handleGetProducers = (callback, socket) => {
-  const sessionId = participants[socket.userId];
-
-  let producersList = [];
-  producers.forEach((producerData) => {
-    if (
-      producerData.userId !== socket.userId &&
-      producerData.sessionId === sessionId
-    ) {
-      producersList = [...producersList, producerData.producer.id];
-    }
-  });
-
-  callback({ producersList });
-};
-const addTransport = (transport, sessionId, consumer, socket) => {
+const addTransport = (transport, sessionId, consumer, userId) => {
   transports = [
     ...transports,
-    { userId: socket.userId, transport, sessionId, consumer },
+    {
+      userId,
+      transport,
+      sessionId,
+      consumer,
+    },
   ];
-  participants[socket.userId] = {
-    ...participants[socket.userId],
-    transports: [...participants[socket.userId], transport.id],
+
+  participants[userId] = {
+    ...participants[userId],
+    transports: [...participants[userId].transports, transport.id],
   };
 };
-const addProducer = (producer, sessionId, socket) => {
-  producers = [...producers, { userId: socket.userId, producer, sessionId }];
-  participants[socket.userId] = {
-    ...participants[socket.userId],
-    producers: [...participants[socket.userId], producer.id],
-  };
-};
-const addConsumer = (consumer, sessionId, socket) => {
-  consumers = [...consumers, { userId: socket.userId, consumer, sessionId }];
-  participants[socket.userId] = {
-    ...participants[socket.userId],
-    consumers: [...participants[socket.userId], consumer.id],
-  };
-};
-const informConsumers = (sessionId, userId, id) => {
-  console.log(`just joined id:${id} to session:${sessionId} as ${userId}`);
+
+const handleGetProducers = (callback, userId) => {
+  const { sessionId } = participants[userId];
+
+  let producerList = [];
   producers.forEach((producerData) => {
-    if (producerData.sessionId == sessionId && producerData.userId !== userId) {
-      const producerSocket = participants[producerData.userId].socket;
-      producerSocket.emit('new-producer', { producerId: id });
+    if (
+      producerData.userId !== userId &&
+      producerData.sessionId === sessionId
+    ) {
+      producerList = [...producerList, producerData.producer.id];
+    }
+  });
+  callback(producerList);
+};
+
+const addProducer = (producer, sessionId, userId) => {
+  // console.log(userId)
+  // console.log(participants[userId])
+  producers = [...producers, { userId, producer, sessionId }];
+  participants[userId] = {
+    ...participants[userId],
+    producers: [...participants[userId].producers, producer.id],
+  };
+};
+
+const informConsumers = (sessionId, userId, id) => {
+  console.log(`just joined, id ${id} ${sessionId}, ${userId}`);
+
+  producers.forEach((producerData) => {
+    if (
+      producerData.userId !== userId &&
+      producerData.sessionId === sessionId
+    ) {
+      const produceSocket = participants[producerData.userId].socket;
+      produceSocket.emit('new-producer', { producerId: id });
     }
   });
 };
+
+const addConsumer = (consumer, sessionId, userId) => {
+  consumers = [...consumers, { userId, consumer, sessionId }];
+
+  participants[userId] = {
+    ...participants[userId],
+    consumers: [...participants[userId].consumers, consumer.id],
+  };
+};
+
 const getTransport = (userId) => {
   const [producerTransport] = transports.filter(
     (transport) => transport.userId === userId && !transport.consumer
   );
   return producerTransport.transport;
 };
-const handleTransportProduct = async (producer, socket, callback) => {
-  const { sessionId } = participants[socket.userId];
-  addProducer(producer, sessionId, socket);
-  informConsumers(sessionId, socket.userId, producer.id);
+
+const handleTransportConnect = async ({ dtlsParameters }, userId) => {
+  console.log('DTLS PARAMS... ', dtlsParameters);
+  await getTransport(userId).connect({ dtlsParameters });
+};
+
+const handleTransportProduce = async (
+  { kind, rtpParameters },
+  callback,
+  userId
+) => {
+  console.log(userId);
+  const producer = await getTransport(userId).produce({
+    kind,
+    rtpParameters,
+  });
+  const { sessionId } = participants[userId];
+
+  addProducer(producer, sessionId, userId);
+  informConsumers(sessionId, userId, producer.id);
+
   console.log('Producer ID: ', producer.id, producer.kind);
+
   producer.on('transportclose', () => {
-    console.log('producer transport close');
+    console.log('transport for this producer closed ');
     producer.close();
   });
 
   callback({
     id: producer.id,
-    producerExist: producers.length > 1 ? true : false,
+    producersExist: producers.length > 1,
   });
 };
 
-const handleTransportRecvConnect = async (
+const handleTransportReceiveConnect = async ({
   dtlsParameters,
-  serverConsumerTransportId
-) => {
-  const consumerTransport = transports.find((transportData) => {
-    transportData.consumer &&
-      transportData.transport.id === serverConsumerTransportId;
-  }).transport;
+  serverConsumerTransportId,
+}) => {
+  console.log(`DTLS PARAMS: ${dtlsParameters}`);
+  const consumerTransport = transports.find(
+    (transportData) =>
+      transportData.consumer &&
+      transportData.transport.id === serverConsumerTransportId
+  ).transport;
   await consumerTransport.connect({ dtlsParameters });
 };
 
 const handleConsume = async (
-  { rtpCapabilities, remoteProducerId, serverConsumerTransportId, socket },
-  callback
+  { rtpCapabilities, remoteProducerId, serverConsumerTransportId },
+  callback,
+  socket
 ) => {
   try {
     const { sessionId } = participants[socket.userId];
     const router = classSessions[sessionId].router;
-    let consumerTransport = transports.find(
+
+    const consumerTransport = transports.find(
       (transportData) =>
+        transportData.consumer &&
         transportData.transport.id === serverConsumerTransportId
     ).transport;
 
-    if (router.canConsume({ producerId: remoteProducerId, rtpCapabilities })) {
-      const consumer = await consumerTransport.consume({
+    if (
+      router.canConsume({
         producerId: remoteProducerId,
         rtpCapabilities,
+      })
+    ) {
+      const consumer = await consumerTransport.consume({
+        producerId: remoteProducerId,
         paused: true,
+        rtpCapabilities,
       });
 
+      console.log(consumer);
       consumer.on('transportclose', () => {
         console.log('transport close from consumer');
-        consumer.close();
       });
-
       consumer.on('producerclose', () => {
         console.log('producer of consumer closed');
         socket.emit('producer-closed', { remoteProducerId });
 
         consumerTransport.close([]);
-        transports.filter(
+        transports = transports.filter(
           (transportData) => transportData.transport.id !== consumerTransport.id
         );
-
         consumer.close();
-        consumers.filter(
+        consumers = consumers.filter(
           (consumerData) => consumerData.consumer.id !== consumer.id
         );
       });
-      addConsumer(consumer, sessionId, socket);
+
+      addConsumer(consumer, sessionId, socket.userId);
+
       const serverParams = {
         id: consumer.id,
         producerId: remoteProducerId,
         kind: consumer.kind,
         rtpParameters: consumer.rtpParameters,
-        type: consumer.type,
+        serverConsumerId: consumer.id,
       };
+
       callback({ serverParams });
     }
   } catch (error) {
+    console.log(error);
     callback({
-      serverParams: {
+      params: {
         error,
       },
     });
   }
 };
 
-const handleConsumerResume = async ({ serverConsumerId }) => {
-  const consumer = consumers.find(
+const handleConsumeResume = async ({ serverConsumerId }) => {
+  console.log('consumer resume');
+  const { consumer } = consumers.find(
     (consumerData) => consumerData.consumer.id === serverConsumerId
   );
   await consumer.resume();
 };
 
 export {
+  setSocketServerInstance,
+  handleJoinSession,
+  handleCreateTransport,
+  handleTransportConnect,
+  handleTransportProduce,
+  handleTransportReceiveConnect,
+  handleConsume,
+  handleConsumeResume,
+  handleGetProducers,
+  handleDisconnect,
   addNewConnectedUser,
   removeConnectedUser,
   getActiveConnections,
-  setSocketServerInstance,
   getSocketServerInstance,
   getOnlineUsers,
-  addNewClassSession,
-  addNewParticipantsToRoom,
-  handleCreateWebRtcTransport,
-  handleGetProducers,
   getTransport,
-  handleTransportProduct,
-  handleTransportRecvConnect,
-  handleConsume,
-  handleConsumerResume,
 };

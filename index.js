@@ -1,7 +1,4 @@
-import { cpus } from 'os';
 import { createServer } from 'http';
-import { readFileSync } from 'fs';
-
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
@@ -9,19 +6,17 @@ import bodyParser from 'body-parser';
 import helmet from 'helmet';
 import { default as mongoose } from 'mongoose';
 import cors from 'cors';
+import { createWorker } from 'mediasoup';
 import { registerSocketServer } from './socketServer';
 import tutorRouter from './routes/tutorRouter';
-import studentRouter from './routes/StudentRouter';
+import studentRouter from './routes/studentRouter';
 import shareRoutes from './routes/shareRouter';
 import { statusCode } from './util/statusCodes';
-import crypto from 'crypto';
 
-console.log(Object.keys(cpus()).length);
-console.log(crypto.getCiphers().length);
-const privateKey = readFileSync('./certificates/server.key', 'utf-8');
-const certificate = readFileSync('./certificates/server.crt', 'utf-8');
 
-const credentials = { key: privateKey, cert: certificate };
+let worker;
+
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -44,8 +39,30 @@ app.use((error, _req, res, _next) => {
   const { message, data, type } = error;
   res.status(status).json({ message, data, type });
 });
+const createNewWorker = async () => {
+  const newWorker = await createWorker({
+    rtcMinPort: 10000,
+    rtcMaxPort: 10100,
+    logLevel: 'warn',
+    logTags: ['info', 'ice', 'dtls', 'rtp', 'rtcp', 'srtp'],
+  });
 
-registerSocketServer(httpServer);
+  newWorker.on('died', (error) => {
+    // This implies something serious happened, so kill the application
+    console.error('mediasoup worker has died', error);
+    // exit in 2 seconds
+    setTimeout(
+      () => process.exit(1),
+      parseFloat(process.env.WORKER_DIE_TIMEOUT)
+    );
+  });
+  return newWorker;
+};
+
+(async () => {
+  worker = await createNewWorker();
+  registerSocketServer(httpServer, worker);
+})();
 
 mongoose
   .connect(process.env.MONGO_URI)
