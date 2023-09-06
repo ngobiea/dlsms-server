@@ -1,4 +1,4 @@
-import Assignment from '../../../model/assignment';
+import Assignment from '../../../model/assignment.js';
 
 export async function createAssignment(req, res, _next) {
   try {

@@ -1,11 +1,11 @@
-import Classroom from '../../../model/classroom';
-import ClassSession from '../../../model/classSession';
-import Message from '../../../model/message';
+import Classroom from '../../../model/classroom.js';
+import ClassSession from '../../../model/classSession.js';
+import Message from '../../../model/message.js';
 import { validationResult } from 'express-validator';
-import { statusCode } from '../../../util/statusCodes';
-import { handleScheduleClassSession } from '../../../socketHandlers/tutors/handleScheduleClassSession';
+import { statusCode } from '../../../util/statusCodes.js';
+import { handleScheduleClassSession } from '../../../socketHandlers/tutors/handleScheduleClassSession.js';
 
-export async function scheduleClassSession(req, res, next) {
+export const scheduleClassSession = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -78,4 +78,4 @@ export async function scheduleClassSession(req, res, next) {
     }
     next(err);
   }
-}
+};

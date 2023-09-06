@@ -1,10 +1,10 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { signup, login,getClassroom,getClassrooms } from '../controllers/shared/shareController';
-import { postJoin,verifyClassroomCode } from '../controllers/student/studentController';
+import { signup, login,getClassroom,getClassrooms } from '../controllers/shared/shareController.js';
+import { postJoin,verifyClassroomCode } from '../controllers/student/studentController.js';
 
 const studentRouter = express.Router();
-import auth from '../middlewares/is-auth';
+import auth from '../middlewares/is-auth.js';
 
 studentRouter.post(
   '/signup',

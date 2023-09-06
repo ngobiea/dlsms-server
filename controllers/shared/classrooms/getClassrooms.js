@@ -1,5 +1,5 @@
-import Classroom from '../../../model/classroom';
-import { statusCode } from '../../../util/statusCodes';
+import Classroom from '../../../model/classroom.js';
+import { statusCode } from '../../../util/statusCodes.js';
 
 export const getClassrooms = async (req, res, next) => {
   try {

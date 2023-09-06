@@ -1,4 +1,4 @@
-import {addNewConnectedUser} from '../serverStore';
+import {addNewConnectedUser} from '../serverStore.js';
 
 const newConnectionHandler = async (socket, io) => {
   const userDetails = socket.userId;

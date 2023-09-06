@@ -1,5 +1,5 @@
-import { Schema, model } from "mongoose";
-import ExamQuestionSchema from "./examQuestion";
+import { Schema, model } from 'mongoose';
+import ExamQuestionSchema from './examQuestion';
 
 const ExamSession = new Schema({
   title: {
@@ -20,20 +20,19 @@ const ExamSession = new Schema({
   },
   tutorId: {
     type: Schema.Types.ObjectId,
-    ref: "Tutor",
+    ref: 'Tutor',
   },
   classroomId: {
     type: Schema.Types.ObjectId,
-    ref: "Classroom",
+    ref: 'Classroom',
   },
   students: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Student",
+      ref: 'Student',
     },
-    
   ],
   examQuestions: [ExamQuestionSchema],
 });
 
-export default model("ExamSession", ExamSession);
+export default model('ExamSession', ExamSession);

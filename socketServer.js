@@ -1,7 +1,6 @@
-import authSocket from './middlewares/authSocket';
+import authSocket from './middlewares/authSocket.js';
 import {
   setSocketServerInstance,
-  getOnlineUsers,
   handleGetProducers,
   handleConsume,
   handleCreateTransport,
@@ -10,14 +9,16 @@ import {
   handleTransportReceiveConnect,
   handleConsumeResume,
   handleJoinSession,
-} from './serverStore';
-import disconnectHandler from './socketHandlers/disconnectHandler';
-import { handleGetClassroom } from './socketHandlers/updates/updateClassroom';
+} from './serverStore.js';
+import disconnectHandler from './socketHandlers/disconnectHandler.js';
+import { handleGetClassroom } from './socketHandlers/updates/updateClassroom.js';
 import { Server } from 'socket.io';
 import {
   handleNewExamSession,
   handleCreateExamSessionTransport,
-} from './ExamStore';
+  handleExamSessionOnProducerConnect,
+  handleExamSessionOnProducerProduce,
+} from './ExamStore.js';
 
 const registerSocketServer = (server, worker) => {
   const io = new Server(server, {
@@ -90,13 +91,38 @@ const registerSocketServer = (server, worker) => {
     socket.on('consumer-resume', handleConsumeResume);
 
     // Exam Session
-    socket.on('examSession', ({ examSessionId }, cb) => {
-      handleNewExamSession({ examSessionId, socket, worker }, cb);
+    socket.on('newExamSession', ({ examSessionId }, callback) => {
+      handleNewExamSession({ examSessionId, socket, worker }, callback);
     });
-    socket.on('createExamSessionTransport', ({ examSessionId }, cb) => {
-      // handleCreateExamSessionTransport(examSessionId, cb, socket);
-    });
-    socket.on('connectExamSessionTransport', ({ dtlsParameters }) => { });
+    socket.on(
+      'createExamSessionWebRTCTransport',
+      ({ examSessionId, isProducer }, callback) => {
+        handleCreateExamSessionTransport(
+          examSessionId,
+          isProducer,
+          callback,
+          socket
+        );
+      }
+    );
+    socket.on(
+      'examSessionOnProducerTransportConnect',
+      handleExamSessionOnProducerConnect
+    );
+    socket.on(
+      'examSessionOnTransportProduce',
+      (
+        { examSessionId, kind, rtpParameters, appData, producerTransportId },
+
+        callback
+      ) => {
+        handleExamSessionOnProducerProduce(
+          { examSessionId, kind, rtpParameters, appData, producerTransportId },
+          socket,
+          callback
+        );
+      }
+    );
   });
 };
 

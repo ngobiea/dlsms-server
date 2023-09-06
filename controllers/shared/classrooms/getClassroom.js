@@ -1,6 +1,6 @@
-import ClassRoom from '../../../model/classroom';
-import Message from '../../../model/message';
-import { statusCode } from '../../../util/statusCodes';
+import ClassRoom from '../../../model/classroom.js';
+import Message from '../../../model/message.js';
+import { statusCode } from '../../../util/statusCodes.js';
 export  const getClassroom = async (req, res, next)=> {
   try {
     const { classroomId } = req.params;

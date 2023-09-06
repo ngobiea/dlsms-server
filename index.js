@@ -7,11 +7,11 @@ import helmet from 'helmet';
 import { default as mongoose } from 'mongoose';
 import cors from 'cors';
 import { createWorker } from 'mediasoup';
-import { registerSocketServer } from './socketServer';
-import tutorRouter from './routes/tutorRouter';
-import studentRouter from './routes/studentRouter';
-import shareRoutes from './routes/shareRouter';
-import { statusCode } from './util/statusCodes';
+import { registerSocketServer } from './socketServer.js';
+import tutorRouter from './routes/tutorRouter.js';
+import studentRouter from './routes/studentRouter.js';
+import shareRoutes from './routes/shareRouter.js';
+import { statusCode } from './util/statusCodes.js';
 
 
 let worker;

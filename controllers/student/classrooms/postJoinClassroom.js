@@ -1,9 +1,9 @@
-import { upload } from '../../../middlewares/multer-s3';
-import User from '../../../model/userModel';
-import Classroom from '../../../model/classroom';
-import { statusCode } from '../../../util/statusCodes';
-import { handleValidationErrors } from '../../../util/validation';
-import { updateClassroomMembers } from '../../../socketHandlers/updates/updateClassroomMembers';
+import { upload } from '../../../middlewares/multer-s3.js';
+import User from '../../../model/userModel.js';
+import Classroom from '../../../model/classroom.js';
+import { statusCode } from '../../../util/statusCodes.js';
+import { handleValidationErrors } from '../../../util/validation.js';
+import { updateClassroomMembers } from '../../../socketHandlers/updates/updateClassroomMembers.js';
 export const postJoinClassroom = async (req, res, next) => {
   const { userId } = req;
   upload(process.env.TRAINING_BUCKET, userId).array('files')(

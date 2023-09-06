@@ -1,6 +1,5 @@
-import { Schema as _Schema, model } from 'mongoose';
-const Schema = _Schema;
-import File from './file';
+import { Schema,model } from 'mongoose';
+import File from './file.js';
 
 const UserSchema = new Schema({
   firstName: {

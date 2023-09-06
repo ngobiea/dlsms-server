@@ -1,4 +1,4 @@
-import { mediaCodecs, createWebRtcTransport } from './mediasoupServer';
+import { mediaCodecs, createWebRtcTransport } from './mediasoupServer.js';
 
 const connectedUsers = new Map();
 

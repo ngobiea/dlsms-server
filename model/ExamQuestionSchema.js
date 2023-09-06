@@ -1,7 +1,7 @@
-import { Schema as _Schema } from "mongoose";
+import { Schema as _Schema } from 'mongoose';
 
 const Schema = _Schema;
-import File from "./file";
+import File from './file';
 
 const ExamQuestionSchema = new Schema({
   question: {

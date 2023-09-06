@@ -1,7 +1,7 @@
 import multer from 'multer';
 import multerS3 from 'multer-s3';
-import { s3 } from '../util/aws/aws-setup';
-import { crateFolderInBucket } from '../util/aws/create-s3-folder';
+import { s3 } from '../util/aws/aws-setup.js';
+import { crateFolderInBucket } from '../util/aws/create-s3-folder.js';
 
 const upload = (bucketName, folderName) => {
   crateFolderInBucket(s3, bucketName, folderName);

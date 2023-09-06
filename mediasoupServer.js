@@ -19,7 +19,6 @@ const createWebRtcTransport = async (router) => {
       const transport = await router.createWebRtcTransport(
         webRtcTransportOptions
       );
-      console.log(`transport id: ${transport.id}`);
 
       transport.on('dtlsstatechange', (dtlsState) => {
         if (dtlsState === 'closed') {

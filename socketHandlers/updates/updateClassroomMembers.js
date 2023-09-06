@@ -1,4 +1,4 @@
-import {getSocketServerInstance} from '../../serverStore';
+import {getSocketServerInstance} from '../../serverStore.js';
 
 export const updateClassroomMembers = async (
   classroom,
@@ -6,7 +6,7 @@ export const updateClassroomMembers = async (
   studentId
 ) => {
   try {
-    const io = serverStore.getSocketServerInstance();
+    const io = getSocketServerInstance();
     const data = {
       classroom,
       students,

@@ -4,7 +4,7 @@ import {
   resendVerificationCode,
   verifyEmail,
   logout,
-} from '../controllers/shared/shareController';
+} from '../controllers/shared/shareController.js';
 
 shareRouter.get('/verify-email/:token', verifyEmail);
 shareRouter.post('/resend-verification-code', resendVerificationCode);

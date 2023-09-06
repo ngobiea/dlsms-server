@@ -1,9 +1,9 @@
-import User from '../../../model/userModel';
-import Classroom from '../../../model/classroom';
-import { statusCode } from '../../../util/statusCodes';
+import User from '../../../model/userModel.js';
+import Classroom from '../../../model/classroom.js';
+import { statusCode } from '../../../util/statusCodes.js';
 import { validationResult } from 'express-validator';
-import { handleValidationErrors } from '../../../util/validation';
-import { updateClassroomMembers } from '../../../socketHandlers/updates/updateClassroomMembers';
+import { handleValidationErrors } from '../../../util/validation.js';
+import { updateClassroomMembers } from '../../../socketHandlers/updates/updateClassroomMembers.js';
 
 export const postJoin = async (req, res, next) => {
   const { userId } = req;

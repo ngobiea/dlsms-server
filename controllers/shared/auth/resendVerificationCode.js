@@ -1,5 +1,5 @@
 import jsonwebtoken from 'jsonwebtoken';
-import { sendEmail } from '../../../util/aws/ses';
+import { sendEmail } from '../../../util/aws/ses.js';
 import User from '../../../model/userModel.js';
 import { signUpEmail } from '../../../util/emailMessages.js';
 import { statusCode } from '../../../util/statusCodes.js';

@@ -1,5 +1,5 @@
-export { verifyClassroomCode } from './classrooms/postVerifyClassroomCode';
-export { getClassrooms } from '../shared/classrooms/getClassrooms';
-export { getClassroom } from '../shared/classrooms/getClassroom';
-export { postJoinClassroom } from './classrooms/postJoinClassroom';
-export { postJoin } from './classrooms/postJoin';
+export { verifyClassroomCode } from './classrooms/postVerifyClassroomCode.js';
+export { getClassrooms } from '../shared/classrooms/getClassrooms.js';
+export { getClassroom } from '../shared/classrooms/getClassroom.js';
+export { postJoinClassroom } from './classrooms/postJoinClassroom.js';
+export { postJoin } from './classrooms/postJoin.js';

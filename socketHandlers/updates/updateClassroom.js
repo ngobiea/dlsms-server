@@ -1,5 +1,5 @@
-import Classroom from '../../model/classroom';
-import Message from '../../model/message';
+import Classroom from '../../model/classroom.js';
+import Message from '../../model/message.js';
 
 export const handleGetClassroom = async (classroomId, socket) => {
   const classroom = await Classroom.findById(

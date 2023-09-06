@@ -1,5 +1,5 @@
 import jsonwebtoken from 'jsonwebtoken';
-import User from '../model/userModel';
+import User from '../model/userModel.js';
 const authSocket = async (socket, next) => {
   const token = socket.handshake.auth?.token;
   try {

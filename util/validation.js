@@ -1,6 +1,6 @@
 import { validationResult } from 'express-validator';
-import { statusCode } from './statusCodes';
-export function handleValidationErrors(req, _res, next) {
+import { statusCode } from './statusCodes.js';
+export const handleValidationErrors = (req, _res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed');
@@ -9,4 +9,4 @@ export function handleValidationErrors(req, _res, next) {
     return next(error);
   }
   return next();
-}
+};
