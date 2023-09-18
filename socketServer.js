@@ -18,6 +18,7 @@ import {
   handleCreateExamSessionTransport,
   handleExamSessionOnProducerConnect,
   handleExamSessionOnProducerProduce,
+  handlePauseProducer,
 } from './ExamStore.js';
 
 const registerSocketServer = (server, worker) => {
@@ -45,6 +46,7 @@ const registerSocketServer = (server, worker) => {
     socket.on('update-classroom', (classroomId) => {
       handleGetClassroom(classroomId, socket);
     });
+
     socket.on('new-session-initiated', () => {
       console.log('received new session initiation');
     });
@@ -71,10 +73,13 @@ const registerSocketServer = (server, worker) => {
         );
       }
     );
+
     socket.on('getProducers', (callback) => {
       handleGetProducers(callback, socket.userId);
     });
+
     socket.on('transport-recv-connect', handleTransportReceiveConnect);
+
     socket.on(
       'consume',
       (
@@ -88,12 +93,14 @@ const registerSocketServer = (server, worker) => {
         );
       }
     );
+
     socket.on('consumer-resume', handleConsumeResume);
 
     // Exam Session
     socket.on('newExamSession', ({ examSessionId }, callback) => {
       handleNewExamSession({ examSessionId, socket, worker }, callback);
     });
+
     socket.on(
       'createExamSessionWebRTCTransport',
       ({ examSessionId, isProducer }, callback) => {
@@ -105,10 +112,12 @@ const registerSocketServer = (server, worker) => {
         );
       }
     );
+
     socket.on(
       'examSessionOnProducerTransportConnect',
       handleExamSessionOnProducerConnect
     );
+
     socket.on(
       'examSessionOnTransportProduce',
       (
@@ -123,6 +132,9 @@ const registerSocketServer = (server, worker) => {
         );
       }
     );
+    socket.on('pauseProducer', ({ examSessionId, producerId }, cb) => {
+      handlePauseProducer({ examSessionId, producerId, socket }, cb);
+    });
   });
 };
 

@@ -1,8 +1,7 @@
-import { Schema as _Schema } from "mongoose";
-import FileSchema from "./file";
-const Schema = _Schema;
+import { Schema } from 'mongoose';
+import FileSchema from './File';
 
-const ExamSessionRecordingSchema = new Schema({
+const ExamSessionRecording = new Schema({
   file: FileSchema,
   date: {
     type: Date,
@@ -12,4 +11,4 @@ const ExamSessionRecordingSchema = new Schema({
   },
 });
 
-export default ExamSessionRecordingSchema;
+export default ExamSessionRecording;

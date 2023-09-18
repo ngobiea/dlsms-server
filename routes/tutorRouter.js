@@ -1,15 +1,20 @@
 import { Router } from 'express';
-import {login,signup} from '../controllers/shared/shareController.js';
+import { login, signup } from '../controllers/shared/shareController.js';
+import { body, param } from 'express-validator';
+import auth from '../middlewares/is-auth.js';
 import {
   createClassroom,
   getClassroom,
   getClassrooms,
   scheduleClassSession,
+  scheduleExamSession,
+  deleteExamSession,
+  deleteExamQuestion,
+  postExamQuestion,
+  postSaveExamSession,
 } from '../controllers/tutor/tutorController.js';
 
 const tutorRouter = Router();
-import { body } from 'express-validator';
-import auth from '../middlewares/is-auth.js';
 
 tutorRouter.post(
   '/signup',
@@ -50,7 +55,6 @@ tutorRouter.post(
   ],
   login
 );
-
 tutorRouter.post(
   '/classroom',
   auth,
@@ -78,7 +82,55 @@ tutorRouter.post(
   ],
   scheduleClassSession
 );
+tutorRouter.post(
+  '/exam-session',
+  auth,
+  [
+    body('title').trim().notEmpty().withMessage('Schedule Title is required'),
+    body('description')
+      .trim()
+      .notEmpty()
+      .withMessage('Schedule Description is required'),
+    body('startDate').trim().notEmpty().withMessage('Start Date is required'),
+    body('endDate').trim().notEmpty().withMessage('endDate is required'),
+    body('classroomId').notEmpty().withMessage('Error creating schedule'),
+  ],
+  scheduleExamSession
+);
 
+tutorRouter.post(
+  '/exam-session/question/:examSessionId',
+  auth,
+  [
+    body('id').notEmpty().withMessage('Error creating form'),
+    body('question').notEmpty().withMessage('Question is required'),
+    body('options')
+      .optional()
+      .isArray()
+      .withMessage('options must be an array'),
+    body('correctOption')
+      .optional()
+      .notEmpty()
+      .withMessage('Correct Option is required'),
+    body('points').notEmpty().withMessage('Points is required'),
+    body('type').notEmpty().withMessage('Type is required'),
+    param('examSessionId').notEmpty().withMessage('Error creating form'),
+  ],
+  postExamQuestion
+);
+
+tutorRouter.delete('/exam-session/:examSessionId', auth, deleteExamSession);
+tutorRouter.delete(
+  '/exam-session/question/:examSessionId',
+  auth,
+  deleteExamQuestion
+);
+tutorRouter.patch(
+  '/exam-session/save',
+  auth,
+  [body('examSessionId').notEmpty()],
+  postSaveExamSession
+);
 tutorRouter.get('/classroom', auth, getClassrooms);
 tutorRouter.get('/classroom/:classroomId', auth, getClassroom);
 

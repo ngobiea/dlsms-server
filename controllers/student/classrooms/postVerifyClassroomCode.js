@@ -1,4 +1,4 @@
-import Classroom from '../../../model/classroom.js';
+import Classroom from '../../../model/Classroom.js';
 import { validationResult } from 'express-validator';
 import { statusCode } from '../../../util/statusCodes.js';
 export const verifyClassroomCode = async (req, res, next) => {

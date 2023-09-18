@@ -1,17 +1,19 @@
-import { Schema as _Schema, model } from "mongoose";
-import Violation from "./violation";
-import BrowsingHistory from "./browsingHistory";
-import ExamSessionRecording from "./ExamSessionRecording";
+import { Schema, model } from "mongoose";
+import Violation from "./Violation.js";
+import BrowsingHistory from "./BrowsingHistory.js";
+import ExamSessionRecording from "./ExamSessionRecording.js";
 
-const Schema = _Schema;
+
 const StudentExamSession = new Schema({
   studentId: {
-    type: _Schema.Types.ObjectId,
-    ref: "Student",
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
   examSessionId: {
-    type: _Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "ExamSession",
+    required: true,
   },
   status: {
     type: String,
@@ -24,10 +26,6 @@ const StudentExamSession = new Schema({
     type: Date,
   },
   violations: [Violation],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
   browsingHistory: [BrowsingHistory],
   examSessionRecording: [ExamSessionRecording],
   marks: {

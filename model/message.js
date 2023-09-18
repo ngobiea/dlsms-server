@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
-import File from './file.js';
-const MessageSchema = new Schema({
+import File from './File.js';
+const Message = new Schema({
   sender: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -34,4 +34,4 @@ const MessageSchema = new Schema({
   },
 });
 
-export default model('Message', MessageSchema);
+export default model('Message', Message);

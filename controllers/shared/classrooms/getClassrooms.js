@@ -1,4 +1,4 @@
-import Classroom from '../../../model/classroom.js';
+import Classroom from '../../../model/Classroom.js';
 import { statusCode } from '../../../util/statusCodes.js';
 
 export const getClassrooms = async (req, res, next) => {

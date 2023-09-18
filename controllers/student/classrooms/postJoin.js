@@ -1,7 +1,6 @@
-import User from '../../../model/userModel.js';
-import Classroom from '../../../model/classroom.js';
+import User from '../../../model/User.js';
+import Classroom from '../../../model/Classroom.js';
 import { statusCode } from '../../../util/statusCodes.js';
-import { validationResult } from 'express-validator';
 import { handleValidationErrors } from '../../../util/validation.js';
 import { updateClassroomMembers } from '../../../socketHandlers/updates/updateClassroomMembers.js';
 

@@ -1,7 +1,6 @@
-import { Schema as _Schema, model } from 'mongoose';
-const Schema = _Schema;
+import { Schema, model } from 'mongoose';
 
-const ClassroomSchema = new Schema({
+const Classroom = new Schema({
   name: {
     type: String,
     required: true,
@@ -26,6 +25,6 @@ const ClassroomSchema = new Schema({
     },
   ],
 });
-ClassroomSchema.index({ name: 1, tutor: 1 }, { unique: true });
+Classroom.index({ name: 1, tutor: 1 }, { unique: true });
 
-export default model('Classroom', ClassroomSchema);
+export default model('Classroom', Classroom);

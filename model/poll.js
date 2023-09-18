@@ -1,6 +1,5 @@
-import { Schema as _Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
 
-const Schema = _Schema;
 const Options = new Schema({
   option: {
     type: String,
@@ -9,14 +8,14 @@ const Options = new Schema({
     type: Number,
   },
 });
-const PollSchema = new Schema({
+const Poll = new Schema({
   title: {
     type: String,
     required: true,
   },
   classroomId: {
     type: Schema.Types.ObjectId,
-    ref: "Classroom",
+    ref: 'Classroom',
   },
   question: {
     type: String,
@@ -25,7 +24,7 @@ const PollSchema = new Schema({
   voters: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Student",
+      ref: 'User',
     },
   ],
   options: [Options],
@@ -33,7 +32,4 @@ const PollSchema = new Schema({
     type: Date,
   },
 });
-export default {
-  Poll: mongoose.model("Poll", PollSchema),
-  Options,
-};
+export default model('Poll', Poll);

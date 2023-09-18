@@ -1,7 +1,7 @@
-import ClassRoom from '../../../model/classroom.js';
-import Message from '../../../model/message.js';
+import ClassRoom from '../../../model/Classroom.js';
+import Message from '../../../model/Message.js';
 import { statusCode } from '../../../util/statusCodes.js';
-export  const getClassroom = async (req, res, next)=> {
+export const getClassroom = async (req, res, next) => {
   try {
     const { classroomId } = req.params;
     const classroom = await ClassRoom.findById(classroomId)
@@ -31,7 +31,7 @@ export  const getClassroom = async (req, res, next)=> {
     res.status(statusCode.OK).json({
       message: 'Classrooms fetched successfully',
       classroom: {
-        _id: classroom._id,
+        _id: classroom._id.toString(),
         name: classroom.name,
         description: classroom.description,
         code: classroom.code,
@@ -46,4 +46,4 @@ export  const getClassroom = async (req, res, next)=> {
     }
     next(err);
   }
-}
+};

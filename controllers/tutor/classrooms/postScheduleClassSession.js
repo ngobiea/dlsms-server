@@ -1,6 +1,6 @@
-import Classroom from '../../../model/classroom.js';
-import ClassSession from '../../../model/classSession.js';
-import Message from '../../../model/message.js';
+import Classroom from '../../../model/Classroom.js';
+import ClassSession from '../../../model/ClassSession.js';
+import Message from '../../../model/Message.js';
 import { validationResult } from 'express-validator';
 import { statusCode } from '../../../util/statusCodes.js';
 import { handleScheduleClassSession } from '../../../socketHandlers/tutors/handleScheduleClassSession.js';
@@ -49,7 +49,7 @@ export const scheduleClassSession = async (req, res, next) => {
     const savedMessage = await message.save();
     const savedSessionMessage = {
       message: {
-        _id: savedMessage._id,
+        _id: savedMessage._id.toString(),
         sender: {
           _id: req.userId,
           firstName: classroom.tutor.firstName,

@@ -1,6 +1,6 @@
 import { upload } from '../../../middlewares/multer-s3.js';
-import User from '../../../model/userModel.js';
-import Classroom from '../../../model/classroom.js';
+import User from '../../../model/User.js';
+import Classroom from '../../../model/ClassSession.js';
 import { statusCode } from '../../../util/statusCodes.js';
 import { handleValidationErrors } from '../../../util/validation.js';
 import { updateClassroomMembers } from '../../../socketHandlers/updates/updateClassroomMembers.js';

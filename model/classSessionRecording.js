@@ -1,11 +1,10 @@
-import { Schema as _Schema, model } from "mongoose";
-const Schema = _Schema;
-import FileSchema from "./file";
+import { Schema, model } from 'mongoose';
+import FileSchema from './File';
 
-const ClassSessionRecordingSchema = new Schema({
+const ClassSessionRecording = new Schema({
   classSession: {
-    type: _Schema.Types.ObjectId,
-    ref: "ClassroomSession",
+    type: Schema.Types.ObjectId,
+    ref: 'ClassroomSession',
   },
   file: FileSchema,
   date: {
@@ -16,4 +15,4 @@ const ClassSessionRecordingSchema = new Schema({
   },
 });
 
-export default model("ClassSessionRecording",ClassSessionRecordingSchema);
+export default model('ClassSessionRecording', ClassSessionRecording);

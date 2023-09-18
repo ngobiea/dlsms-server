@@ -1,10 +1,9 @@
-import { Schema as _Schema, model } from 'mongoose';
-import File from './file';
-const Schema = _Schema;
+import { Schema, model } from 'mongoose';
+import File from './File';
 
-const AssignmentSchema = new Schema({
+const Assignment = new Schema({
   classroom: {
-    type: _Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Classroom',
   },
   title: {
@@ -25,11 +24,11 @@ const AssignmentSchema = new Schema({
   },
   submissions: [
     {
-      type: _Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Submission',
     },
   ],
   files: [File],
 });
 
-export default model('Assignment', AssignmentSchema);
+export default model('Assignment', Assignment);

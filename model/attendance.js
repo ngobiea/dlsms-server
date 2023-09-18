@@ -1,18 +1,16 @@
-import { Schema as _Schema, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-const Schema = _Schema;
-
-const AttendanceSchema = new Schema({
+const Attendance = new Schema({
   studentId: {
-    type: _Schema.Types.ObjectId,
-    ref: 'Student',
+    type: Schema.Types.ObjectId,
+    ref: 'User',
   },
   sessionId: {
-    type: _Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
   },
   sessionType: {
     type: String,
   },
 });
 
-export default model('Attendance', AttendanceSchema);
+export default model('Attendance', Attendance);

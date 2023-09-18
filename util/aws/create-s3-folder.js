@@ -1,7 +1,7 @@
 import { PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
-// const { s3 } = require('./s3-setup');
 
-export async function crateFolderInBucket(s3,bucketName, folderName) {
+
+export const crateFolderInBucket = async (s3, bucketName, folderName) => {
   try {
     const headCommand = new HeadObjectCommand({
       Bucket: bucketName,
@@ -23,11 +23,11 @@ export async function crateFolderInBucket(s3,bucketName, folderName) {
         console.log(
           `Folder '${folderName}' created successfully in bucket '${bucketName}'.`
         );
-      } catch (error) {
+      } catch (err) {
         console.error('Error creating folder:', err);
       }
     } else {
-      console.error('Error checking folder:', err);
+      console.error('Error checking folder:', error);
     }
   }
-}
+};

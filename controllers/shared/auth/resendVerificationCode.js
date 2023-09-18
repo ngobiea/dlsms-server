@@ -1,10 +1,10 @@
 import jsonwebtoken from 'jsonwebtoken';
 import { sendEmail } from '../../../util/aws/ses.js';
-import User from '../../../model/userModel.js';
+import User from '../../../model/User.js';
 import { signUpEmail } from '../../../util/emailMessages.js';
 import { statusCode } from '../../../util/statusCodes.js';
 
-export const  resendVerificationCode = async (req, res, next)=> {
+export const resendVerificationCode = async (req, res, next) => {
   const { email } = req.body;
   try {
     const user = await User.findOne({ email });
@@ -14,7 +14,7 @@ export const  resendVerificationCode = async (req, res, next)=> {
       throw error;
     }
     const token = jsonwebtoken.sign(
-      { userId: user._id },
+      { userId: user._id.toString() },
       process.env.JWT_SECRET,
       {
         expiresIn: process.env.JWT_EXPIRATION_TIME,
@@ -41,5 +41,4 @@ export const  resendVerificationCode = async (req, res, next)=> {
     }
     next(err);
   }
-}
-
+};

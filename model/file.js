@@ -1,6 +1,4 @@
-import { Schema as _Schema } from 'mongoose';
-
-const Schema = _Schema;
+import { Schema } from 'mongoose';
 
 const File = new Schema({
   name: {
@@ -16,6 +14,9 @@ const File = new Schema({
     type: Number,
   },
   mimetype: {
+    type: String,
+  },
+  key: {
     type: String,
   },
 });

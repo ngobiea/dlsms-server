@@ -1,7 +1,7 @@
-import { Schema,model } from 'mongoose';
-import File from './file.js';
+import { Schema, model } from 'mongoose';
+import File from './File.js';
 
-const UserSchema = new Schema({
+const User = new Schema({
   firstName: {
     type: String,
     required: true,
@@ -38,6 +38,6 @@ const UserSchema = new Schema({
   machineLearningImages: [File],
 });
 
-UserSchema.index({ email: 1, studentId: 1 }, { unique: true });
+User.index({ email: 1, studentId: 1 }, { unique: true });
 
-export default model('User', UserSchema);
+export default model('User', User);

@@ -1,18 +1,47 @@
 import { mediaCodecs, createWebRtcTransport } from './mediasoupServer.js';
-
+import { getSocketServerInstance } from './serverStore.js';
+/**
+ * examSessions = {
+ *    examSessionId: {
+ *        router,
+ *        participants: {
+ *            userId: {
+ *                user
+ *            },
+ *        },
+ *    },
+ * }
+ */
 const examSessions = new Map();
+/**
+ * transports = {
+ *                transportId: {
+ *                    user,
+ *                    transport,
+ *                    isProducer,
+ *                    examSessionId,
+ *                },
+ * }
+ */
 const transports = new Map();
+/**
+ * producers = {
+ *               producerId: {
+ *                  user
+ *                  producer,
+ *                  examSessionId,
+ *             },
+ * }
+ */
 const producers = new Map();
 const consumers = new Map();
-
-
 
 const handleNewExamSession = async (
   { examSessionId, socket, worker },
   callback
 ) => {
   let router;
-  let participants = new Map(); // Change participants to be a Map
+  let participants = new Map();
   try {
     if (examSessions.has(examSessionId)) {
       router = examSessions.get(examSessionId).router;
@@ -33,7 +62,7 @@ const handleNewExamSession = async (
       participants,
     });
     callback({ rtpCapabilities: router.rtpCapabilities });
-    console.log(examSessions.get(examSessionId).router.id);
+    // console.log(examSessions.get(examSessionId).router.id);
   } catch (error) {
     console.log(error);
     callback({ error: error.message });
@@ -55,6 +84,11 @@ const handleCreateExamSessionTransport = async (
         iceParameters: transport.iceParameters,
         iceCandidates: transport.iceCandidates,
         dtlsParameters: transport.dtlsParameters,
+        appData: {
+          audio: false,
+          video: false,
+          screen: false,
+        },
       },
     });
 
@@ -62,8 +96,9 @@ const handleCreateExamSessionTransport = async (
       user: socket.user,
       transport,
       isProducer,
+      examSessionId,
     });
-    console.log(transports.get(transport.id));
+    // console.log(transports.get(transport.id));
     transports.get(transport.id).transport.on('routerclose', () => {
       console.log('router closed so transport closed');
     });
@@ -111,6 +146,10 @@ const handleExamSessionOnProducerProduce = async (
         producer,
         examSessionId,
       });
+      console.log(appData);
+      // console.log(
+      //   socket.user.firstName + ' is producing ' + kind + ' to ' + examSessionId
+      // );
       producers.get(producer.id).producer.on('transportclose', () => {
         console.log('transport closed so producer closed');
       });
@@ -123,6 +162,7 @@ const handleExamSessionOnProducerProduce = async (
       producers.get(producer.id).producer.observer.on('close', () => {
         console.log('producer closed');
       });
+      console.log(producer.id);
       callback({ id: producer.id });
     }
   } catch (error) {
@@ -130,7 +170,23 @@ const handleExamSessionOnProducerProduce = async (
     callback({ error });
   }
 };
-
+const handlePauseProducer = async (
+  { examSessionId, producerId, socket },
+  cb
+) => {
+  if (
+    producers.has(producerId) &&
+    producers.get(producerId).examSessionId === examSessionId
+  ) {
+    producers.get(producerId).producer.pause();
+    console.log('pausing producer: ', producerId);
+    cb({ isPaused: true });
+  } else {
+    cb({ isPaused: false });
+  }
+};
+const handleLeaveExamSession = async ({ examSessionId, socket }) => {};
+const handleDisconnect = async ({ socket }) => {};
 const handleCreateExamSessionConsumerTransport = async (
   examSessionId,
   isProducer,
@@ -143,4 +199,8 @@ export {
   handleCreateExamSessionTransport,
   handleExamSessionOnProducerConnect,
   handleExamSessionOnProducerProduce,
+  handlePauseProducer,
+  handleLeaveExamSession,
+  handleDisconnect,
+  handleCreateExamSessionConsumerTransport,
 };

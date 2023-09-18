@@ -5,9 +5,9 @@ import bcrypt from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
 import { sendEmail } from '../../../util/aws/ses.js';
 import { signUpEmail } from '../../../util/emailMessages.js';
-import User from '../../../model/userModel.js';
-import {statusCode} from '../../../util/statusCodes.js';
-export const signup = async (req, res, next)=> {
+import User from '../../../model/User.js';
+import { statusCode } from '../../../util/statusCodes.js';
+export const signup = async (req, res, next) => {
   let newUser;
   try {
     const errors = validationResult(req);
@@ -43,9 +43,13 @@ export const signup = async (req, res, next)=> {
       studentId: accountType === 'student' ? req.body.studentId : ' ',
     });
     await newUser.save();
-    const token =jsonwebtoken.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRATION_TIME,
-    });
+    const token = jsonwebtoken.sign(
+      { userId: newUser._id.toString() },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRATION_TIME,
+      }
+    );
     const verificationLink = `http://localhost:${process.env.PORT}/verify-email/${token}`;
 
     try {
@@ -69,4 +73,4 @@ export const signup = async (req, res, next)=> {
     }
     next(err);
   }
-}
+};

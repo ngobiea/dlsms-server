@@ -12,10 +12,10 @@ import tutorRouter from './routes/tutorRouter.js';
 import studentRouter from './routes/studentRouter.js';
 import shareRoutes from './routes/shareRouter.js';
 import { statusCode } from './util/statusCodes.js';
+import path from 'path';
 
-
+const __dirname = path.resolve();
 let worker;
-
 
 const app = express();
 const httpServer = createServer(app);
@@ -26,6 +26,7 @@ app.use(
     methods: ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   })
 );
+app.use('/success', express.static(path.join(__dirname, 'public')));
 app.use(helmet());
 app.use(bodyParser.json());
 
@@ -41,10 +42,22 @@ app.use((error, _req, res, _next) => {
 });
 const createNewWorker = async () => {
   const newWorker = await createWorker({
-    rtcMinPort: 10000,
-    rtcMaxPort: 10100,
-    logLevel: 'warn',
-    logTags: ['info', 'ice', 'dtls', 'rtp', 'rtcp', 'srtp'],
+    logLevel: 'debug',
+    logTags: [
+      'info',
+      'ice',
+      'dtls',
+      'rtp',
+      'srtp',
+      'rtcp',
+      'rtx',
+      'bwe',
+      'score',
+      'simulcast',
+      'svc',
+      'sctp',
+      'message',
+    ],
   });
 
   newWorker.on('died', (error) => {

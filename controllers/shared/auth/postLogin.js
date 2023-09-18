@@ -2,7 +2,7 @@ import { validationResult } from 'express-validator';
 import bcryptjs from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
 import { statusCode } from '../../../util/statusCodes.js';
-import User from '../../../model/userModel.js';
+import User from '../../../model/User.js';
 
 export const login = async (req, res, next) => {
   try {
@@ -16,13 +16,6 @@ export const login = async (req, res, next) => {
     const { email, password, accountType } = req.body;
 
     const user = await User.findOne({ email });
-
-    if (user.role !== accountType) {
-      const error = new Error('Unauthorized! Invalid account type');
-      error.statusCode = statusCode.UNAUTHORIZED;
-      throw error;
-    }
-
     if (!user) {
       const error = new Error(
         'Email not found click Create Account to register'
@@ -30,6 +23,12 @@ export const login = async (req, res, next) => {
       error.statusCode = statusCode.UNAUTHORIZED;
       throw error;
     }
+    if (user.role !== accountType) {
+      const error = new Error('Unauthorized! Invalid account type');
+      error.statusCode = statusCode.UNAUTHORIZED;
+      throw error;
+    }
+
     const passwordMatch = await bcryptjs.compare(password, user.password);
     if (!passwordMatch) {
       const error = new Error('Invalid password');

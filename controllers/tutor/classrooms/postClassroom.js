@@ -1,8 +1,8 @@
 import { validationResult } from 'express-validator';
-import Classroom from '../../../model/classroom.js';
+import Classroom from '../../../model/Classroom.js';
 import { generateClassroomCode } from '../../../util/generateClassroomCode.js';
 import { statusCode } from '../../../util/statusCodes.js';
-export async function createClassroom(req, res, next) {
+export const createClassroom = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -31,4 +31,4 @@ export async function createClassroom(req, res, next) {
     }
     next(err);
   }
-}
+};

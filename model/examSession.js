@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import ExamQuestionSchema from './examQuestion';
+import ExamQuestion from './ExamQuestion.js';
 
 const ExamSession = new Schema({
   title: {
@@ -10,29 +10,31 @@ const ExamSession = new Schema({
     type: String,
     required: true,
   },
-  date: {
+  startDate: {
     type: Date,
     required: true,
   },
-  startTime: {
+  endDate: {
     type: Date,
-    default: Date.now,
+    required: false,
   },
-  tutorId: {
+  tutor: {
     type: Schema.Types.ObjectId,
-    ref: 'Tutor',
+    ref: 'User',
+    required: true,
   },
   classroomId: {
     type: Schema.Types.ObjectId,
     ref: 'Classroom',
+    required: true,
   },
   students: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Student',
+      ref: 'User',
     },
   ],
-  examQuestions: [ExamQuestionSchema],
+  examQuestions: [ExamQuestion],
 });
 
 export default model('ExamSession', ExamSession);

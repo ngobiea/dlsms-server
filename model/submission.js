@@ -1,14 +1,13 @@
-import { Schema as _Schema, model } from 'mongoose';
-import File from './file';
-const Schema = _Schema;
+import { Schema , model } from 'mongoose';
+import File from './File';
 
-const SubmissionSchema = new Schema({
+const Submission = new Schema({
   studentId: {
-    type: _Schema.Types.ObjectId,
-    ref: 'Student',
+    type: Schema.Types.ObjectId,
+    ref: 'User',
   },
   assignmentId: {
-    type: _Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Assignment',
   },
   files: [File],
@@ -19,9 +18,9 @@ const SubmissionSchema = new Schema({
     type: Boolean,
   },
   gradedBy: {
-    type: _Schema.Types.ObjectId,
-    ref: 'Tutor',
+    type: Schema.Types.ObjectId,
+    ref: 'User',
   },
 });
 
-export default model('Submission', SubmissionSchema);
+export default model('Submission', Submission);
