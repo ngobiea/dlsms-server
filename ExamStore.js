@@ -141,12 +141,14 @@ const handleExamSessionOnProducerProduce = async (
           appData,
         });
 
+      console.log(producer.appData);
+
       producers.set(producer.id, {
         user: socket.user,
         producer,
         examSessionId,
       });
-      console.log(appData);
+      // console.log(appData);
       // console.log(
       //   socket.user.firstName + ' is producing ' + kind + ' to ' + examSessionId
       // );
