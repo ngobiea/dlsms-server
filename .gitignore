@@ -9,5 +9,6 @@ package-lock.json
 
 test/
 .vscode
+text.txt
 
 certificates

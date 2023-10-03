@@ -1,4 +1,5 @@
 import authSocket from './middlewares/authSocket.js';
+import { ExamStore } from './mediasoupHandlers/examSession/ExamStore.js';
 import {
   setSocketServerInstance,
   handleGetProducers,
@@ -13,13 +14,8 @@ import {
 import disconnectHandler from './socketHandlers/disconnectHandler.js';
 import { handleGetClassroom } from './socketHandlers/updates/updateClassroom.js';
 import { Server } from 'socket.io';
-import {
-  handleNewExamSession,
-  handleCreateExamSessionTransport,
-  handleExamSessionOnProducerConnect,
-  handleExamSessionOnProducerProduce,
-  handlePauseProducer,
-} from './ExamStore.js';
+
+const examSessions = new ExamStore();
 
 const registerSocketServer = (server, worker) => {
   const io = new Server(server, {
@@ -93,20 +89,36 @@ const registerSocketServer = (server, worker) => {
         );
       }
     );
-
     socket.on('consumer-resume', handleConsumeResume);
 
-    // Exam Session
+    // Exam Session Handlers
     socket.on('newExamSession', ({ examSessionId }, callback) => {
-      handleNewExamSession({ examSessionId, socket, worker }, callback);
+      examSessions.joinExamSession({ examSessionId }, callback, socket, worker);
     });
 
     socket.on(
-      'createExamSessionWebRTCTransport',
+      'createExamSessionTp',
       ({ examSessionId, isProducer }, callback) => {
-        handleCreateExamSessionTransport(
-          examSessionId,
-          isProducer,
+        examSessions.createTransport(
+          { examSessionId, isProducer },
+          callback,
+          socket
+        );
+      }
+    );
+
+    socket.on('ESOnPTConnect', ({ examSessionId, dtlsParameters }) => {
+      examSessions.connectProducerTransport(
+        { dtlsParameters, examSessionId },
+        socket
+      );
+    });
+
+    socket.on(
+      'ESOnPTProduce',
+      ({ examSessionId, kind, rtpParameters, appData }, callback) => {
+        examSessions.producerTransportOnProduce(
+          { examSessionId, kind, rtpParameters, appData },
           callback,
           socket
         );
@@ -114,27 +126,49 @@ const registerSocketServer = (server, worker) => {
     );
 
     socket.on(
-      'examSessionOnProducerTransportConnect',
-      handleExamSessionOnProducerConnect
-    );
-
-    socket.on(
-      'examSessionOnTransportProduce',
-      (
-        { examSessionId, kind, rtpParameters, appData, producerTransportId },
-
-        callback
-      ) => {
-        handleExamSessionOnProducerProduce(
-          { examSessionId, kind, rtpParameters, appData, producerTransportId },
-          socket,
-          callback
+      'ESOnCTConnect',
+      ({ examSessionId, dtlsParameters, consumerTransportId }) => {
+        examSessions.connectConsumerTransport(
+          {
+            examSessionId,
+            dtlsParameters,
+            consumerTransportId,
+          },
+          socket
         );
       }
     );
-    socket.on('pauseProducer', ({ examSessionId, producerId }, cb) => {
-      handlePauseProducer({ examSessionId, producerId, socket }, cb);
+
+    socket.on('getStudentPTIds', ({ examSessionId }, callback) => {
+      examSessions.getStudentPTIds({ examSessionId }, callback);
     });
+
+    socket.on(
+      'ESOnCTConsume',
+      (
+        { examSessionId, rtpCapabilities, producerId, consumerTransportId },
+        callback
+      ) => {
+        examSessions.consumeTransport(
+          { examSessionId, rtpCapabilities, producerId, consumerTransportId },
+          callback,
+          socket
+        );
+      }
+    );
+
+    socket.on('ESOnCTResume', ({ examSessionId, consumerId }) => {
+      examSessions.eSConsumeResume({ examSessionId, consumerId }, socket);
+    });
+
+    socket.on('closeESProducer', ({ examSessionId, producerId }, callback) => {
+      examSessions.closeProducer(
+        { examSessionId, producerId },
+        callback,
+        socket
+      );
+    });
+    
   });
 };
 
