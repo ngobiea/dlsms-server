@@ -3,6 +3,7 @@ import Violation from './Violation.js';
 import BrowsingHistory from './BrowsingHistory.js';
 import ExamSessionRecording from './ExamSessionRecording.js';
 
+
 const StudentExamSession = new Schema({
   studentId: {
     type: Schema.Types.ObjectId,

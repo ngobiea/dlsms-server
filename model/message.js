@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import File from './File.js';
+
 const Message = new Schema({
   sender: {
     type: Schema.Types.ObjectId,

@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import FileSchema from './File';
 
+
 const ClassSessionRecording = new Schema({
   classSession: {
     type: Schema.Types.ObjectId,

@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import File from './File.js';
 
+
 const User = new Schema({
   firstName: {
     type: String,

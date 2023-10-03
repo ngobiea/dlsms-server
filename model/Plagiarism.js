@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 
+
 const Plagiarism = new Schema({
   studentId: {
     type: Schema.Types.ObjectId,

@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 
+
 const ClassSession = new Schema({
   title: {
     type: String,

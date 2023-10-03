@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import File from './File';
+
 const MachineLearningImage = new Schema({
   studentId: {
     type: Schema.Types.ObjectId,

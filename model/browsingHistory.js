@@ -1,5 +1,6 @@
 import { Schema } from 'mongoose';
 
+
 const BrowsingHistory = new Schema({
   title: {
     type: String,

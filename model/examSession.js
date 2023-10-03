@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import ExamQuestion from './ExamQuestion.js';
 
+
 const ExamSession = new Schema({
   title: {
     type: String,
