@@ -15,4 +15,4 @@ const BrowsingHistory = new Schema({
   },
 });
 
-export default BrowsingHistory
+export default BrowsingHistory;

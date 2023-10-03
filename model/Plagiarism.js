@@ -1,13 +1,13 @@
-import { Schema , model } from "mongoose";
+import { Schema, model } from 'mongoose';
 
 const Plagiarism = new Schema({
   studentId: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
   },
   submissionId: {
     type: Schema.Types.ObjectId,
-    ref: "Assignment",
+    ref: 'Assignment',
   },
   originalityScore: {
     type: Number,
@@ -27,4 +27,4 @@ const Plagiarism = new Schema({
     default: Date.now,
   },
 });
-export default model("Plagiarism", Plagiarism);
+export default model('Plagiarism', Plagiarism);

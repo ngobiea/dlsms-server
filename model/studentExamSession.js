@@ -1,18 +1,17 @@
-import { Schema, model } from "mongoose";
-import Violation from "./Violation.js";
-import BrowsingHistory from "./BrowsingHistory.js";
-import ExamSessionRecording from "./ExamSessionRecording.js";
-
+import { Schema, model } from 'mongoose';
+import Violation from './Violation.js';
+import BrowsingHistory from './BrowsingHistory.js';
+import ExamSessionRecording from './ExamSessionRecording.js';
 
 const StudentExamSession = new Schema({
   studentId: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
   },
   examSessionId: {
     type: Schema.Types.ObjectId,
-    ref: "ExamSession",
+    ref: 'ExamSession',
     required: true,
   },
   status: {
@@ -36,4 +35,4 @@ const StudentExamSession = new Schema({
   },
 });
 
-export default model("StudentExamSession", StudentExamSession);
+export default model('StudentExamSession', StudentExamSession);
