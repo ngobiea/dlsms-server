@@ -58,6 +58,9 @@ const createNewWorker = async () => {
       'sctp',
       'message',
     ],
+
+    
+
   });
 
   newWorker.on('died', (error) => {
