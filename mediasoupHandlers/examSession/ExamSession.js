@@ -41,7 +41,7 @@ export class ExamSession {
   }
 
   /** */
-  async addTransport(isProducer, callback, socket) {
+  async addTransport(isProducer, userId, callback, socket) {
     try {
       const transport = await createWebRtcTransport(this.router);
       if (socket.user.role === 'student') {
@@ -53,13 +53,13 @@ export class ExamSession {
         } else {
           this.students
             .get(socket.user._id.toString())
-            .setStudentConsumerTransport(transport);
+            .setsConsumerTransport(transport);
         }
       } else if (socket.user.role === 'tutor') {
         if (isProducer) {
           this.tutor.setProducerTransport(transport);
         } else {
-          this.tutor.addConsumerTransport(transport);
+          this.tutor.addConsumerTransport(transport, userId);
         }
       }
       callback({
@@ -96,15 +96,15 @@ export class ExamSession {
     }
   }
   /** */
-  async connectConsumerTransport(dtlsParameters, consumerTransportId, socket) {
+  async connectConsumerTransport(dtlsParameters, userId, socket) {
     try {
       if (socket.user.role === 'student') {
         await this.students
           .get(socket.user._id.toString())
-          .studentConsumerTransport.connect({ dtlsParameters });
+          .sConsumerTransport.connect({ dtlsParameters });
       } else if (socket.user.role === 'tutor') {
         await this.tutor.consumerTransports
-          .get(consumerTransportId)
+          .get(userId)
           .connect({ dtlsParameters });
       }
     } catch (error) {
@@ -179,12 +179,9 @@ export class ExamSession {
     });
     return producerTransportIds;
   }
+
   /** */
-  async addConsumer(
-    { rtpCapabilities, producerId, consumerTransportId },
-    callback,
-    socket
-  ) {
+  async addConsumer({ rtpCapabilities, producerId, userId }, callback, socket) {
     try {
       if (
         this.router.canConsume({
@@ -194,11 +191,10 @@ export class ExamSession {
         socket.user.role === 'tutor'
       ) {
         const consumer = await this.tutor.consumerTransports
-          .get(consumerTransportId)
+          .get(userId)
           .consume({
             producerId,
             rtpCapabilities,
-
             paused: true,
           });
 
@@ -313,24 +309,51 @@ export class ExamSession {
   }
   /** */
   removeStudent(socket) {
+    const studentId = socket.user._id.toString();
     try {
-      this.students.get(socket.user._id.toString()).producerTransport.close();
-
-      this.students.delete(socket.user._id.toString());
-      console.log('student removed from exam session');
+      if (this.students.has(studentId)) {
+        const student = this.students.get(studentId);
+        if (student.producerTransport) {
+          student.producerTransport.close();
+        }
+        if (student.sConsumerTransport) {
+          student.sConsumerTransport.close();
+          student.sConsumerTransport = null;
+        }
+        this.students.delete(studentId);
+        console.log('student removed from exam session');
+        this.removeStudentConsumerTransport(studentId);
+      } else {
+        console.log('student not found in exam session');
+      }
     } catch (error) {
       console.log(error);
     }
   }
   /** */
-  async removeTutor() {
+  removeTutor() {
     try {
-      await this.tutor.producerTransport.close();
-      this.tutor.consumerTransports.forEach((transport) => {
-        transport.close();
-      });
-      this.tutor = null;
-      console.log('tutor removed from exam session');
+      if (this.tutor) {
+        if (this.tutor.producerTransport) {
+          this.tutor.producerTransport.close();
+        }
+        this.tutor.consumerTransports.forEach((transport) => {
+          transport.close();
+        });
+        this.tutor = null;
+        console.log('tutor removed from exam session');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  removeStudentConsumerTransport(studentId) {
+    try {
+      if (this.tutor?.consumerTransports.has(studentId)) {
+        this.tutor.consumerTransports.get(studentId).close();
+        this.tutor.consumerTransports.delete(studentId);
+        console.log('student consumer transport removed from exam session');
+      }
     } catch (error) {
       console.log(error);
     }

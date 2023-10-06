@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 
-
 const Attendance = new Schema({
   studentId: {
     type: Schema.Types.ObjectId,

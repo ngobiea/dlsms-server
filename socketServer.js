@@ -31,12 +31,15 @@ const registerSocketServer = (server, worker) => {
   });
 
   io.on('connection', (socket) => {
+    examSessions.setIO(io);
+
     console.log('user connected');
     console.log(socket.id);
 
     socket.on('disconnect', () => {
       console.log('User Disconnected of id', socket.userId);
       disconnectHandler(socket);
+      examSessions.disconnectSocket(socket);
     });
 
     socket.on('update-classroom', (classroomId) => {
@@ -93,14 +96,20 @@ const registerSocketServer = (server, worker) => {
 
     // Exam Session Handlers
     socket.on('newExamSession', ({ examSessionId }, callback) => {
-      examSessions.joinExamSession({ examSessionId }, callback, socket, worker);
+      examSessions.joinExamSession(
+        { examSessionId },
+        callback,
+        socket,
+        worker,
+        io
+      );
     });
 
     socket.on(
       'createExamSessionTp',
-      ({ examSessionId, isProducer }, callback) => {
+      ({ examSessionId, isProducer, userId }, callback) => {
         examSessions.createTransport(
-          { examSessionId, isProducer },
+          { examSessionId, isProducer, userId },
           callback,
           socket
         );
@@ -125,19 +134,16 @@ const registerSocketServer = (server, worker) => {
       }
     );
 
-    socket.on(
-      'ESOnCTConnect',
-      ({ examSessionId, dtlsParameters, consumerTransportId }) => {
-        examSessions.connectConsumerTransport(
-          {
-            examSessionId,
-            dtlsParameters,
-            consumerTransportId,
-          },
-          socket
-        );
-      }
-    );
+    socket.on('ESOnCTConnect', ({ examSessionId, dtlsParameters, userId }) => {
+      examSessions.connectConsumerTransport(
+        {
+          examSessionId,
+          dtlsParameters,
+          userId,
+        },
+        socket
+      );
+    });
 
     socket.on('getStudentPTIds', ({ examSessionId }, callback) => {
       examSessions.getStudentPTIds({ examSessionId }, callback);
@@ -145,12 +151,9 @@ const registerSocketServer = (server, worker) => {
 
     socket.on(
       'ESOnCTConsume',
-      (
-        { examSessionId, rtpCapabilities, producerId, consumerTransportId },
-        callback
-      ) => {
+      ({ examSessionId, rtpCapabilities, producerId, userId }, callback) => {
         examSessions.consumeTransport(
-          { examSessionId, rtpCapabilities, producerId, consumerTransportId },
+          { examSessionId, rtpCapabilities, producerId, userId },
           callback,
           socket
         );
@@ -168,7 +171,6 @@ const registerSocketServer = (server, worker) => {
         socket
       );
     });
-    
   });
 };
 

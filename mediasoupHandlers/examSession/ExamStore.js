@@ -3,10 +3,16 @@ import { ExamSession } from './ExamSession.js';
 
 export class ExamStore {
   constructor() {
+    this.io = null;
     this.examSessions = new Map();
   }
+  setIO(io) {
+    this.io = io;
+    console.log('io set');
+    this.io.emit('hello', 'world');
+  }
 
-  async joinExamSession({ examSessionId }, callback, socket, worker) {
+  async joinExamSession({ examSessionId }, callback, socket, worker, io) {
     try {
       let router;
       let examSession;
@@ -28,12 +34,12 @@ export class ExamStore {
     }
   }
 
-  async createTransport({ examSessionId, isProducer }, callback, socket) {
+  createTransport({ examSessionId, isProducer, userId }, callback, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
-        await this.examSessions
+        this.examSessions
           .get(examSessionId)
-          .addTransport(isProducer, callback, socket);
+          .addTransport(isProducer, userId, callback, socket);
       } else {
         console.log('Exam session does not exist');
       }
@@ -42,10 +48,10 @@ export class ExamStore {
     }
   }
 
-  async connectProducerTransport({ dtlsParameters, examSessionId }, socket) {
+  connectProducerTransport({ dtlsParameters, examSessionId }, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
-        await this.examSessions
+        this.examSessions
           .get(examSessionId)
           .connectProducerTransport(dtlsParameters, socket);
       }
@@ -54,14 +60,14 @@ export class ExamStore {
     }
   }
 
-  async producerTransportOnProduce(
+  producerTransportOnProduce(
     { examSessionId, kind, rtpParameters, appData },
     callback,
     socket
   ) {
     try {
       if (this.examSessions.has(examSessionId)) {
-        await this.examSessions
+        this.examSessions
           .get(examSessionId)
           .addProducer({ kind, rtpParameters, appData }, callback, socket);
       }
@@ -71,26 +77,19 @@ export class ExamStore {
     }
   }
 
-  async connectConsumerTransport(
-    { examSessionId, dtlsParameters, consumerTransportId },
-    socket
-  ) {
+  connectConsumerTransport({ examSessionId, dtlsParameters, userId }, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
-        await this.examSessions
+        this.examSessions
           .get(examSessionId)
-          .connectConsumerTransport(
-            dtlsParameters,
-            consumerTransportId,
-            socket
-          );
+          .connectConsumerTransport(dtlsParameters, userId, socket);
       }
     } catch (error) {
       console.log(error);
     }
   }
 
-  async getStudentPTIds({ examSessionId }, callback) {
+  getStudentPTIds({ examSessionId }, callback) {
     try {
       if (this.examSessions.has(examSessionId)) {
         const producerTransportIds = this.examSessions
@@ -103,18 +102,18 @@ export class ExamStore {
     }
   }
 
-  async consumeTransport(
-    { examSessionId, rtpCapabilities, producerId, consumerTransportId },
+  consumeTransport(
+    { examSessionId, rtpCapabilities, producerId, userId },
     callback,
     socket
   ) {
     try {
       if (this.examSessions.has(examSessionId)) {
-        await this.examSessions.get(examSessionId).addConsumer(
+        this.examSessions.get(examSessionId).addConsumer(
           {
             rtpCapabilities,
             producerId,
-            consumerTransportId,
+            userId,
           },
           callback,
           socket
@@ -160,10 +159,6 @@ export class ExamStore {
     try {
       if (this.examSessions.has(examSessionId)) {
         this.examSessions.get(examSessionId).removeUser(socket);
-        // if (this.examSessions.get(examSessionId).users.size === 0) {
-        //   this.examSessions.get(examSessionId).close();
-        //   this.examSessions.delete(examSessionId);
-        // }
       }
     } catch (error) {
       console.log(error);
@@ -174,13 +169,21 @@ export class ExamStore {
     try {
       this.examSessions.forEach((examSession) => {
         examSession.removeUser(socket);
-        // if (examSession.users.size === 0) {
-        //   examSession.close();
-        //   this.examSessions.delete(examSession.examSessionId);
-        // }
+        // console.log(examSession);
+        if (examSession.tutor && examSession.students.size === 0) {
+          examSession.getRouter().close();
+          this.examSessions.delete(examSession.examSessionId);
+        }
       });
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  endExamSession({ examSessionId, socket }) {
+    if (this.examSessions.has(examSessionId) && socket.user.role === 'tutor') {
+      this.examSessions.get(examSessionId).getRouter().close();
+      this.examSessions.delete(examSessionId);
     }
   }
 }

@@ -1,10 +1,11 @@
+
 export class Participant {
   constructor(examSessionId, socket) {
     this.socket = socket;
     this.user = socket.user;
     this.examSessionId = examSessionId;
     this.producerTransport = null;
-    this.studentConsumerTransport = null;
+    this.sConsumerTransport = null;
     this.consumerTransports = new Map();
     this.producers = new Map();
     this.consumers = new Map();
@@ -13,39 +14,47 @@ export class Participant {
     this.producerTransport = transport;
     this.producerTransport.on('routerclose', () => {
       console.log('router closed so transport closed');
+      this.producerTransport.close();
     });
   }
-
-  setStudentConsumerTransport(transport) {
-    this.studentConsumerTransport = transport;
+  //student consumer transport for tutor
+  setsConsumerTransport(transport) {
+    this.sConsumerTransport = transport;
     console.log('student added consumer transport');
-    this.studentConsumerTransport.on('routerclose', () => {
+    this.sConsumerTransport.on('routerclose', () => {
       console.log('router closed so transport closed');
+      this.sConsumerTransport.close();
     });
   }
 
-  addConsumerTransport(transport) {
-    this.consumerTransports.set(transport.id, transport);
+  addConsumerTransport(transport, userId) {
+    this.consumerTransports.set(userId, transport);
     console.log('tutor added consumer transport');
-    this.consumerTransports.get(transport.id).on('routerclose', () => {
+    this.consumerTransports.get(userId).on('routerclose', () => {
       console.log('router closed so transport closed');
+      this.socket.emit('closeESCT', {
+        examSessionId: this.examSessionId,
+        userId,
+      });
+      this.consumerTransports.get(userId).close();
     });
-    // if (this.user.role === 'student') {
-    //   this.socket.emit('newStudent', {});
-    // }
   }
 
   addProducer(producer) {
     this.producers.set(producer.id, producer);
     this.producers.get(producer.id).on('transportclose', () => {
       console.log('transport closed so producer closed');
+      this.producers.get(producer.id).close();
+      this.producers.delete(producer.id);
     });
 
     this.producers.get(producer.id).observer.on('pause', () => {
       console.log('producer paused');
+      this.producers.get(producer.id).pause();
     });
     this.producers.get(producer.id).observer.on('resume', () => {
       console.log('producer resumed');
+      this.producers.get(producer.id).resume();
     });
     this.producers.get(producer.id).observer.on('close', () => {
       console.log('producer closed');
@@ -56,6 +65,8 @@ export class Participant {
     this.consumers.set(consumer.id, consumer);
     this.consumers.get(consumer.id).on('transportclose', () => {
       console.log('transport closed so consumer closed');
+      this.consumers.get(consumer.id).close();
+      this.consumers.delete(consumer.id);
     });
 
     this.consumers.get(consumer.id).on('producerclose', () => {
@@ -64,6 +75,7 @@ export class Participant {
         examSessionId: this.examSessionId,
         consumerId: consumer.id,
       });
+
       this.consumers.get(consumer.id).close();
       this.consumers.delete(consumer.id);
     });

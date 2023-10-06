@@ -7,7 +7,7 @@ const createWebRtcTransport = async (router) => {
           {
             // replace with relevant IP address
             ip: process.env.MEDIASOUP_IP,
-            announcedIp: MEDIASOUP_ANNOUNCED_IP,
+            announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
           },
         ],
         enableUdp: true,
