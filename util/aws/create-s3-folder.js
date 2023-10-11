@@ -1,6 +1,5 @@
 import { PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 
-
 export const crateFolderInBucket = async (s3, bucketName, folderName) => {
   try {
     const headCommand = new HeadObjectCommand({

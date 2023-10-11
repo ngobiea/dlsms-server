@@ -1,9 +1,7 @@
 import { Schema, model } from 'mongoose';
 import Violation from './Violation.js';
 import BrowsingHistory from './BrowsingHistory.js';
-import ExamSessionRecording from './ExamSessionRecording.js';
-
-
+import File from './File.js';
 const StudentExamSession = new Schema({
   studentId: {
     type: Schema.Types.ObjectId,
@@ -27,7 +25,7 @@ const StudentExamSession = new Schema({
   },
   violations: [Violation],
   browsingHistory: [BrowsingHistory],
-  examSessionRecording: [ExamSessionRecording],
+  examSessionRecording: File,
   marks: {
     type: Number,
   },

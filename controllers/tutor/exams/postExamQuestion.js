@@ -3,7 +3,6 @@ import { statusCode } from '../../../util/statusCodes.js';
 import { upload } from '../../../middlewares/multer-s3.js';
 import { handleValidationErrors } from '../../../util/validation.js';
 
-
 export const postExamQuestion = async (req, res, next) => {
   const { examSessionId } = req.params;
 
@@ -49,12 +48,14 @@ export const postExamQuestion = async (req, res, next) => {
           };
           examSession.examQuestions.push(examQuestion);
           await examSession.save();
-          
-          const examQuestionId = examSession.examQuestions[examSession.examQuestions.length - 1]._id.toString();
-          
+
+          const examQuestionId =
+            examSession.examQuestions[
+              examSession.examQuestions.length - 1
+            ]._id.toString();
+
           examQuestion.id = examQuestionId;
           res.status(statusCode.CREATED).json(examQuestion);
-          
         } catch (error) {
           if (!error.statusCode) {
             error.statusCode = statusCode.INTERNAL_SERVER_ERROR;

@@ -34,14 +34,10 @@ export const scheduleExamSession = async (req, res, next) => {
     });
     // save exam session
     await examSession.save();
-    res
-      .status(statusCode.CREATED)
-      .json({
-        examSessionId: examSession._id.toString(),
-        message: 'Exam session created successfully',
-      });
-
- 
+    res.status(statusCode.CREATED).json({
+      examSessionId: examSession._id.toString(),
+      message: 'Exam session created successfully',
+    });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = statusCode.INTERNAL_SERVER_ERROR;

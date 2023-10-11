@@ -1,5 +1,5 @@
 import { mediaCodecs } from '../../mediasoupServer.js';
-import { ExamSession } from './ExamSession.js';
+import { ExamSes } from './ExamSession.js';
 
 export class ExamStore {
   constructor() {
@@ -14,20 +14,16 @@ export class ExamStore {
 
   async joinExamSession({ examSessionId }, callback, socket, worker, io) {
     try {
-      let router;
-      let examSession;
       if (this.examSessions.has(examSessionId)) {
-        router = this.examSessions.get(examSessionId).getRouter();
-        examSession = this.examSessions.get(examSessionId);
-        examSession.addUser(socket);
-        this.examSessions.set(examSessionId, examSession);
+        this.examSessions.get(examSessionId).addUser(socket, callback);
+        console.log('joining existing exam session:', examSessionId);
       } else {
-        router = await worker.createRouter({ mediaCodecs });
-        examSession = new ExamSession(router, examSessionId);
-        examSession.addUser(socket);
+        const router = await worker.createRouter({ mediaCodecs });
+        const examSession = new ExamSes(router, examSessionId, io);
+        examSession.addUser(socket, callback);
         this.examSessions.set(examSessionId, examSession);
+        console.log('joining new exam session:', examSessionId);
       }
-      callback({ rtpCapabilities: router.rtpCapabilities });
     } catch (error) {
       console.log(error);
       callback({ error });
@@ -169,8 +165,9 @@ export class ExamStore {
     try {
       this.examSessions.forEach((examSession) => {
         examSession.removeUser(socket);
-        // console.log(examSession);
-        if (examSession.tutor && examSession.students.size === 0) {
+
+        if (!examSession.tutor && examSession.students.size === 0) {
+          console.log('closing router');
           examSession.getRouter().close();
           this.examSessions.delete(examSession.examSessionId);
         }
@@ -184,6 +181,55 @@ export class ExamStore {
     if (this.examSessions.has(examSessionId) && socket.user.role === 'tutor') {
       this.examSessions.get(examSessionId).getRouter().close();
       this.examSessions.delete(examSessionId);
+    }
+  }
+
+  blurExamQuestionWindow({ examSessionId }, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions.get(examSessionId).blurExamQuestionWindow(socket);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  focusExamQuestionWindow({ examSessionId }, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions.get(examSessionId).focusExamQuestionWindow(socket);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  minimizeExamQuestionWindow({ examSessionId }, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions.get(examSessionId).minimizeExamQuestionWindow(socket);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  maximizeExamQuestionWindow({ examSessionId }, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions.get(examSessionId).maximizeExamQuestionWindow(socket);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  uploadChunk({ examSessionId, index, chunk }, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions.get(examSessionId).uploadChunk(index, chunk, socket);
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 }

@@ -1,6 +1,5 @@
 import { Schema } from 'mongoose';
 
-
 const File = new Schema({
   name: {
     type: String,

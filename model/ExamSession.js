@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 import ExamQuestion from './ExamQuestion.js';
 
-
 const ExamSession = new Schema({
   title: {
     type: String,
@@ -19,6 +18,10 @@ const ExamSession = new Schema({
     type: Date,
     required: false,
   },
+  status: {
+    type: String,
+    default: 'pending',
+  },
   tutor: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -32,7 +35,7 @@ const ExamSession = new Schema({
   students: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'StudentExamSession',
     },
   ],
   examQuestions: [ExamQuestion],

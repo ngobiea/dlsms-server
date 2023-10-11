@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose';
-import FileSchema from './File';
+import FileSchema from './File.js';
 
 
 const ExamSessionRecording = new Schema({

@@ -71,7 +71,6 @@ const createNewWorker = async () => {
   });
   return newWorker;
 };
-
 (async () => {
   worker = await createNewWorker();
   registerSocketServer(httpServer, worker);
