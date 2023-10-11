@@ -1,13 +1,13 @@
 import { Schema } from 'mongoose';
 
 const Violation = new Schema({
-  violationType: {
+  title: {
     type: String,
   },
   description: {
     type: String,
   },
-  violationTime: {
+  time: {
     type: Date,
     default: Date.now,
   },

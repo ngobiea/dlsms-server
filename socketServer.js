@@ -203,22 +203,15 @@ const registerSocketServer = (server, worker) => {
       );
     });
     // blurEQWindow event handler
-    socket.on('blurEQWindow', ({ examSessionId }) => {
-      examSessions.blurExamQuestionWindow({ examSessionId }, socket);
+    socket.on('violation', ({ examSessionId, violation }) => {
+      examSessions.reportViolation({ examSessionId, violation }, socket);
     });
-    // minimizeEQWindow event handler
-    socket.on('minEQWindow', ({ examSessionId }) => {
-      examSessions.minimizeExamQuestionWindow({ examSessionId }, socket);
+
+    socket.on('bHistory', ({ examSessionId, bHistory }) => {
+      examSessions.updateBrowsingHistory({ examSessionId, bHistory }, socket);
     });
-    // maximizeEQWindow event handler
-    socket.on('maxEQWindow', ({ examSessionId }) => {
-      examSessions.maximizeExamQuestionWindow({ examSessionId }, socket);
-    });
-    // focusEQWindow event handler
-    socket.on('focusEQWindow', ({ examSessionId }) => {
-      examSessions.focusExamQuestionWindow({ examSessionId }, socket);
-    });
-    // 
+
+    //
     socket.on('ESR-Chunk', ({ examSessionId, index, chunk }) => {
       examSessions.uploadChunk({ examSessionId, index, chunk }, socket);
     });

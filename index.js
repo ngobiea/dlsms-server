@@ -76,6 +76,8 @@ const createNewWorker = async () => {
   registerSocketServer(httpServer, worker);
 })();
 
+
+
 mongoose
   .connect(process.env.MONGO_URI || process.env.MONGO_URI_LOCAL)
   .then(() => {

@@ -187,7 +187,6 @@ export class ExamSes {
   }
 
   /** */
-
   async addProducer({ kind, rtpParameters, appData }, callback, socket) {
     let producer;
     try {
@@ -217,7 +216,7 @@ export class ExamSes {
       callback({ error });
     }
   }
-
+  /** */
   informTutor(socket) {
     if (this.tutor) {
       this.io.emit('newESStudent', {
@@ -226,6 +225,7 @@ export class ExamSes {
       });
     }
   }
+
   /** */
   informTutorOnNewProducer(socket, producerId) {
     if (this.tutor) {
@@ -430,6 +430,21 @@ export class ExamSes {
     }
   }
   /** */
+  checkExamSessionWindow(socket) {
+    let returnStatus = false;
+    this.io.emit(
+      'ESWopen',
+      {
+        examSessionId: this.examSessionId,
+        userId: socket.userId,
+      },
+      (isESWopen) => {
+        returnStatus = isESWopen;
+      }
+    );
+    return returnStatus;
+  }
+  /** */
   removeTutor() {
     try {
       if (this.tutor) {
@@ -464,76 +479,42 @@ export class ExamSes {
   }
 
   /** */
-  async blurExamQuestionWindow(socket) {
+  async reportViolation(violation, socket) {
     try {
-      const examSession = await ExamSession.findById(
-        this.examSessionId
-      ).populate('students');
-
-      if (!examSession) {
-        return;
+      if (this.students.has(socket.userId)) {
+        const student = this.students.get(socket.userId);
+        const studentInSession = await StudentExamSession.findById(
+          student.sessionId
+        );
+        studentInSession.violations.push(violation);
+        await studentInSession.save();
+        this.io.emit('ESviolation', {
+          examSessionId: this.examSessionId,
+          user: socket.user,
+          violation,
+        });
       }
-      const studentInSession = examSession.students.find(
-        (student) => student.studentId.toString() === socket.userId
-      );
-      if (!studentInSession) {
-        return;
-      }
-      const foundStudent = await StudentExamSession.findById(
-        studentInSession._id
-      );
-
-      if (!foundStudent) {
-        return;
-      }
-      foundStudent.violations.push({
-        violationType: 'blur',
-        description: 'Exam Question Window Loses Focus',
-      });
-
-      await foundStudent.save();
-      this.io.emit('blurESQW', {
-        examSessionId: this.examSessionId,
-        user: socket.user,
-      });
     } catch (error) {
       console.log(error);
     }
   }
+
   /** */
-  async focusExamQuestionWindow(socket) {
+  async updateBrowsingHistory(bHistory, socket) {
     try {
-      const examSession = await ExamSession.findById(this.examSessionId);
-      this.io.emit('focusESQW', {
-        examSessionId: this.examSessionId,
-        user: socket.user,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  /** */
-  async minimizeExamQuestionWindow(socket) {
-    try {
-      const examSession = await ExamSession.findById(this.examSessionId);
-      console.log(examSession);
-      this.io.emit('minimizeESQW', {
-        examSessionId: this.examSessionId,
-        user: socket.user,
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  /** */
-  async maximizeExamQuestionWindow(socket) {
-    try {
-      const examSession = await ExamSession.findById(this.examSessionId);
-      console.log(examSession);
-      this.io.emit('maximizeESQW', {
-        examSessionId: this.examSessionId,
-        user: socket.user,
-      });
+      if (this.students.has(socket.userId)) {
+        const student = this.students.get(socket.userId);
+        const studentInSession = await StudentExamSession.findById(
+          student.sessionId
+        );
+        studentInSession.browsingHistory.push(bHistory);
+        await studentInSession.save();
+        this.io.emit('BH', {
+          examSessionId: this.examSessionId,
+          user: socket.user,
+          bHistory,
+        });
+      }
     } catch (error) {
       console.log(error);
     }

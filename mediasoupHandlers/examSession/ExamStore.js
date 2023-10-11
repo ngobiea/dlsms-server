@@ -184,10 +184,10 @@ export class ExamStore {
     }
   }
 
-  blurExamQuestionWindow({ examSessionId }, socket) {
+  reportViolation({ examSessionId, violation }, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
-        this.examSessions.get(examSessionId).blurExamQuestionWindow(socket);
+        this.examSessions.get(examSessionId).reportViolation(violation, socket);
       }
     } catch (error) {
       console.log(error);
@@ -227,6 +227,17 @@ export class ExamStore {
     try {
       if (this.examSessions.has(examSessionId)) {
         this.examSessions.get(examSessionId).uploadChunk(index, chunk, socket);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  updateBrowsingHistory({ examSessionId, bHistory }, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .updateBrowsingHistory(bHistory, socket);
       }
     } catch (error) {
       console.log(error);
