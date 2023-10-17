@@ -1,6 +1,7 @@
 import { mediaCodecs } from '../../mediasoupServer.js';
 import { ExamSes } from './ExamSession.js';
-
+import ExamSession from '../../model/ExamSession.js';
+import StudentExamSession from '../../model/StudentExamSession.js';
 export class ExamStore {
   constructor() {
     this.io = null;
@@ -8,8 +9,30 @@ export class ExamStore {
   }
   setIO(io) {
     this.io = io;
-    console.log('io set');
-    this.io.emit('hello', 'world');
+  }
+  async getExamStatus({ examSessionId }, callback, socket) {
+    try {
+      const studentExamSession = await StudentExamSession.findOne(
+        {
+          student: socket.userId,
+          examSession: examSessionId,
+        },
+        '-violations -browsingHistory -examSessionRecording -marks -comment -startTime -endTime -__v'
+      ).populate('examSession', 'status');
+
+      if (!studentExamSession) {
+        const examSession = await ExamSession.findById(examSessionId, 'status');
+        if (examSession) {
+          callback({ status: examSession.status });
+        } else {
+          callback({ status: 'invalid' });
+        }
+      } else if (studentExamSession) {
+        callback({ status: 'studentEnded' });
+      }
+
+    
+    } catch (error) {}
   }
 
   async joinExamSession({ examSessionId }, callback, socket, worker, io) {
@@ -142,6 +165,7 @@ export class ExamStore {
       console.log(error);
     }
   }
+
   pauseProducer({ examSessionId, producerId }, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
@@ -151,6 +175,7 @@ export class ExamStore {
       console.log(error);
     }
   }
+
   leaveExamSession({ examSessionId }, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
@@ -193,35 +218,6 @@ export class ExamStore {
       console.log(error);
     }
   }
-  focusExamQuestionWindow({ examSessionId }, socket) {
-    try {
-      if (this.examSessions.has(examSessionId)) {
-        this.examSessions.get(examSessionId).focusExamQuestionWindow(socket);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  minimizeExamQuestionWindow({ examSessionId }, socket) {
-    try {
-      if (this.examSessions.has(examSessionId)) {
-        this.examSessions.get(examSessionId).minimizeExamQuestionWindow(socket);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  maximizeExamQuestionWindow({ examSessionId }, socket) {
-    try {
-      if (this.examSessions.has(examSessionId)) {
-        this.examSessions.get(examSessionId).maximizeExamQuestionWindow(socket);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   uploadChunk({ examSessionId, index, chunk }, socket) {
     try {
@@ -232,12 +228,13 @@ export class ExamStore {
       console.log(error);
     }
   }
-  updateBrowsingHistory({ examSessionId, bHistory }, socket) {
+
+  updateBrowsingHistory({ examSessionId, history }, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
         this.examSessions
           .get(examSessionId)
-          .updateBrowsingHistory(bHistory, socket);
+          .updateBrowsingHistory(history, socket);
       }
     } catch (error) {
       console.log(error);

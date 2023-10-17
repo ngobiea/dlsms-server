@@ -1,7 +1,16 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { signup, login,getClassroom,getClassrooms } from '../controllers/shared/shareController.js';
-import { postJoin,verifyClassroomCode } from '../controllers/student/studentController.js';
+import {
+  signup,
+  login,
+  getClassroom,
+  getClassrooms,
+} from '../controllers/shared/shareController.js';
+import {
+  verifyClassroomCode,
+  postJoinClassroom,
+  getExamSessionStatus,
+} from '../controllers/student/studentController.js';
 
 const studentRouter = express.Router();
 import auth from '../middlewares/is-auth.js';
@@ -64,10 +73,11 @@ studentRouter.post(
       .notEmpty()
       .withMessage('Classroom ID is required'),
   ],
-  postJoin
+  postJoinClassroom
 );
 
 studentRouter.get('/classroom', auth, getClassrooms);
 studentRouter.get('/classroom/:classroomId', auth, getClassroom);
 
-export default studentRouter ;
+
+export default studentRouter;

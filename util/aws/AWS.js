@@ -162,7 +162,7 @@ export class AWS {
       const data = await s3.send(
         new ListPartsCommand({ Bucket, Key, UploadId })
       );
-      if (!data) {
+      if (!data.Parts) {
         return null;
       }
       const parts = data.Parts.map((part) => ({

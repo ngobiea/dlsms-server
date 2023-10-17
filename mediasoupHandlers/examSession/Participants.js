@@ -1,7 +1,6 @@
 export class Participant {
-  constructor(examSessionId, io, user, sessionId) {
-    this.io = io;
-    this.user = user;
+  constructor(examSessionId, socket) {
+    this.socket = socket;
     this.examSessionId = examSessionId;
     this.producerTransport = null;
     this.sConsumerTransport = null;
@@ -10,9 +9,8 @@ export class Participant {
     this.consumers = new Map();
     this.bucketKey = null;
     this.uploadId = null;
-    this.sessionId = sessionId;
+    this.sessionId = null;
   }
-
   //
   setBucketKey(bucketKey) {
     this.bucketKey = bucketKey;
@@ -29,7 +27,7 @@ export class Participant {
   setProducerTransport(transport) {
     this.producerTransport = transport;
     this.producerTransport.on('routerclose', () => {
-      console.log('router closed so transport closed');
+      console.log('router closed so transport close');
       this.producerTransport.close();
     });
   }
@@ -42,7 +40,6 @@ export class Participant {
       this.sConsumerTransport.close();
     });
   }
-
   addConsumerTransport(transport, userId) {
     this.consumerTransports.set(userId, transport);
     console.log('tutor added consumer transport');
@@ -87,7 +84,7 @@ export class Participant {
 
     this.consumers.get(consumer.id).on('producerclose', () => {
       console.log('associated producer closed so consumer closed');
-      this.io.emit('closeESConsumer', {
+      this.socket.emit('closeESConsumer', {
         examSessionId: this.examSessionId,
         consumerId: consumer.id,
       });

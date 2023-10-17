@@ -3,18 +3,15 @@ import Violation from './Violation.js';
 import BrowsingHistory from './BrowsingHistory.js';
 import File from './File.js';
 const StudentExamSession = new Schema({
-  studentId: {
+  student: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
-  examSessionId: {
+  examSession: {
     type: Schema.Types.ObjectId,
     ref: 'ExamSession',
     required: true,
-  },
-  status: {
-    type: String,
   },
   startTime: {
     type: Date,

@@ -11,15 +11,26 @@ export const verifyClassroomCode = async (req, res, next) => {
       throw error;
     }
     const { code } = req.body;
-    const classroomId = await Classroom.findOne({ code }, { _id: 1 });
+    const classroomId = await Classroom.findOne(
+      { code },
+      { _id: 1, students: 1 }
+    );
     if (!classroomId) {
       const error = new Error('Invalid classroom code');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
+    const studentInClassroom = classroomId.students.find(
+      (studentId) => studentId.toString() === req.userId.toString()
+    );
+    let studentAlreadyJoined = false;
+    if (studentInClassroom) {
+      studentAlreadyJoined = true;
+      console.log('student already joined classroom');
+    }
     res.status(statusCode.OK).json({
-      message: 'Classroom code verification pass',
       classroomId,
+      status: studentAlreadyJoined,
     });
   } catch (err) {
     if (!err.statusCode) {

@@ -22,6 +22,9 @@ const upload = (bucketName, folderName) => {
           );
         }
       },
+      contentType:(req, file, cb) => {
+        cb(null, file.mimetype);
+      }
     }),
   });
 };

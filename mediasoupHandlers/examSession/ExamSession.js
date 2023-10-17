@@ -9,12 +9,18 @@ export class ExamSes {
     this.examSessionId = examSessionId;
     this.students = new Map();
     this.tutor = null;
+    this.dualTutor = null;
     this.io = io;
+    this.ackResponseTimeout = 15000;
   }
 
   /** */
   setRouter(router) {
     this.router = router;
+    this.router.on('workerclose', () => {
+      console.log('worker closed so router closed');
+      this.router.close();
+    });
   }
   /** */
   getRouter() {
@@ -33,55 +39,16 @@ export class ExamSes {
   /** */
   async addStudents(socket, callback) {
     try {
-      const examSession = await ExamSession.findById(
-        this.examSessionId
-      ).populate('students');
-      let studentInSession;
-      if (examSession?.status === 'ongoing') {
-        studentInSession = examSession.students.find(
-          (student) => student.studentId.toString() === socket.userId
-        );
-        if (!studentInSession) {
-          const student = new StudentExamSession({
-            studentId: socket.userId,
-            examSessionId: this.examSessionId,
-          });
-          const sessionId = await student.save();
-          examSession.students.push(student._id);
-          await examSession.save();
-          const newStudent = new Participant(
-            this.examSessionId,
-            this.io,
-            socket.user,
-            sessionId._id.toString()
-          );
-          this.students.set(socket.user._id.toString(), newStudent);
-          console.log('new student added to exam session');
-          AWS.createFolderInBucket(
-            process.env.EXAM_RECORD_BUCKET,
-            `${socket.userId}/${this.examSessionId}/`
-          );
-          callback({
-            rtpCapabilities: this.router.rtpCapabilities,
-            status: examSession.status,
-          });
-        } else {
-          console.log('student already left exam session');
-          callback({
-            status: 'studentEnded',
-          });
-        }
-      } else if (examSession?.status === 'ended') {
-        console.log('exam session has ended');
-        callback({
-          status: examSession.status,
-        });
-      } else if (examSession?.status === 'pending') {
-        console.log('exam session has not started yet');
-        callback({
-          status: examSession.status,
-        });
-      }
+      const newStudent = new Participant(this.examSessionId, socket);
+      this.students.set(socket.userId, newStudent);
+      console.log('new student added to exam session');
+      AWS.createFolderInBucket(
+        process.env.EXAM_RECORD_BUCKET,
+        `${socket.userId}/${this.examSessionId}`
+      );
+      callback({
+        rtpCapabilities: this.router.rtpCapabilities,
+      });
     } catch (error) {
       callback({ error });
       console.log(error);
@@ -90,8 +57,7 @@ export class ExamSes {
   /** */
 
   setTutor(socket, callback) {
-    const newTutor = new Participant(this.examSessionId, this.io, socket.user);
-    this.tutor = newTutor;
+    this.tutor = new Participant(this.examSessionId, socket, null);
     console.log('tutor starts monitoring session');
     callback({ rtpCapabilities: this.router.rtpCapabilities });
   }
@@ -102,9 +68,17 @@ export class ExamSes {
       const transport = await createWebRtcTransport(this.router);
       if (socket.user.role === 'student') {
         if (isProducer) {
-          this.students
-            .get(socket.user._id.toString())
-            .setProducerTransport(transport);
+          const studentInSession = new StudentExamSession({
+            student: socket.userId,
+            examSession: this.examSessionId,
+          });
+          await studentInSession.save();
+          const ExamSessionInDB = await ExamSession.findById(this.examSessionId);
+          ExamSessionInDB.students.push(studentInSession._id);
+          await ExamSessionInDB.save();
+
+          this.students.get(socket.userId).setSessionId(studentInSession._id);
+          this.students.get(socket.userId).setProducerTransport(transport);
           this.informTutor(socket);
 
           this.students
@@ -219,7 +193,7 @@ export class ExamSes {
   /** */
   informTutor(socket) {
     if (this.tutor) {
-      this.io.emit('newESStudent', {
+      this.tutor.socket.emit('newESStudent', {
         examSessionId: this.examSessionId,
         user: socket.user,
       });
@@ -229,9 +203,9 @@ export class ExamSes {
   /** */
   informTutorOnNewProducer(socket, producerId) {
     if (this.tutor) {
-      this.io.emit('newESSProducer', {
+      this.tutor.socket.emit('newESSProducer', {
         examSessionId: this.examSessionId,
-        userId: socket.user._id.toString(),
+        userId: socket.userId,
         producerId,
       });
     }
@@ -247,7 +221,7 @@ export class ExamSes {
       });
       producerTransportIds[student.producerTransport.id] = {
         producerIds,
-        user: student.user,
+        user: student.socket.user,
       };
     });
     return producerTransportIds;
@@ -387,41 +361,19 @@ export class ExamSes {
   }
   /** */
   async removeStudent(socket) {
-    const studentId = socket.user._id.toString();
+    const studentId = socket.userId;
     try {
       if (this.students.has(studentId)) {
         const student = this.students.get(studentId);
-        if (student.producerTransport) {
-          student.producerTransport.close();
-        }
-        if (student.sConsumerTransport) {
-          student.sConsumerTransport.close();
-          student.sConsumerTransport = null;
-        }
-        this.removeStudentConsumerTransport(studentId);
-
-        setTimeout(async () => {
-          const file = await AWS.completeMultipartUpload(
-            process.env.EXAM_RECORD_BUCKET,
-            student.bucketKey,
-            student.uploadId
-          );
-          const studentInSession = await StudentExamSession.findById(
-            student.sessionId
-          );
-          if (file) {
-            studentInSession.examSessionRecording = {
-              name: file.Key,
-              bucketName: file.Bucket,
-              location: file.Location,
-              mimetype: 'video/webm',
-              key: file.Key,
-            };
-            await studentInSession.save();
-          }
-          this.students.delete(studentId);
-          console.log('student removed from exam session');
-        }, 300000);
+        student.socket
+          .timeout(this.ackResponseTimeout)
+          .emit('ESOpen', (error) => {
+            if (error) {
+              this.finallyRemoveStudent(studentId);
+            } else {
+              console.log('Exam Session open');
+            }
+          });
       } else {
         console.log('student not found in exam session');
       }
@@ -430,19 +382,39 @@ export class ExamSes {
     }
   }
   /** */
-  checkExamSessionWindow(socket) {
-    let returnStatus = false;
-    this.io.emit(
-      'ESWopen',
-      {
-        examSessionId: this.examSessionId,
-        userId: socket.userId,
-      },
-      (isESWopen) => {
-        returnStatus = isESWopen;
+  async finallyRemoveStudent(studentId) {
+    try {
+      const student = this.students.get(studentId);
+      if (student.producerTransport) {
+        student.producerTransport.close();
       }
-    );
-    return returnStatus;
+      if (student.sConsumerTransport) {
+        student.sConsumerTransport.close();
+        student.sConsumerTransport = null;
+      }
+      const file = await AWS.completeMultipartUpload(
+        process.env.EXAM_RECORD_BUCKET,
+        student.bucketKey,
+        student.uploadId
+      );
+      const studentInSession = await StudentExamSession.findById(
+        student.sessionId
+      );
+      student.endTime = Date.now();
+      if (file) {
+        studentInSession.examSessionRecording = {
+          name: file.Key,
+          bucketName: file.Bucket,
+          location: file.Location,
+          mimetype: 'video/webm',
+          key: file.Key,
+        };
+      }
+      await studentInSession.save();
+      this.students.delete(studentId);
+      console.log('student removed from exam session');
+      this.removeStudentConsumerTransport(studentId);
+    } catch (error) {}
   }
   /** */
   removeTutor() {
@@ -468,7 +440,7 @@ export class ExamSes {
         this.tutor.consumerTransports.get(studentId).close();
         this.tutor.consumerTransports.delete(studentId);
         console.log('student consumer transport removed from exam session');
-        this.io.emit('closeESCT', {
+        this.tutor.socket.emit('closeESCT', {
           examSessionId: this.examSessionId,
           userId: studentId,
         });
@@ -488,11 +460,13 @@ export class ExamSes {
         );
         studentInSession.violations.push(violation);
         await studentInSession.save();
-        this.io.emit('ESviolation', {
-          examSessionId: this.examSessionId,
-          user: socket.user,
-          violation,
-        });
+        if (this.tutor) {
+          this.tutor.socket.emit('ESviolation', {
+            examSessionId: this.examSessionId,
+            user: socket.user,
+            violation,
+          });
+        }
       }
     } catch (error) {
       console.log(error);
@@ -507,13 +481,17 @@ export class ExamSes {
         const studentInSession = await StudentExamSession.findById(
           student.sessionId
         );
-        studentInSession.browsingHistory.push(bHistory);
-        await studentInSession.save();
-        this.io.emit('BH', {
-          examSessionId: this.examSessionId,
-          user: socket.user,
-          bHistory,
+        bHistory.forEach((history) => {
+          studentInSession.browsingHistory.push(history);
+          if (this.tutor) {
+            this.tutor.socket.emit('BH', {
+              examSessionId: this.examSessionId,
+              user: socket.user,
+              history,
+            });
+          }
         });
+        await studentInSession.save();
       }
     } catch (error) {
       console.log(error);

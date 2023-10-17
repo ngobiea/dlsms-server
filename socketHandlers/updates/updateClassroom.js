@@ -1,13 +1,13 @@
 import Classroom from '../../model/Classroom.js';
 import Message from '../../model/Message.js';
 
-export const handleGetClassroom = async (classroomId, socket) => {
+export const handleGetClassroom = async (classroomId, callback) => {
   const classroom = await Classroom.findById(
     classroomId,
     '-name -code -description -tutor'
   ).populate(
     'students',
-    '-password -verified -institution -studentId -role -machineLearningImages -email'
+    '-password -verified -institution -role -machineLearningImages -email'
   );
   const messages = await Message.find({ classroomId }, '-classroomId -__v')
     .populate(
@@ -19,5 +19,5 @@ export const handleGetClassroom = async (classroomId, socket) => {
     .populate('poll', '-tutor -classroomId -students')
     .sort({ timestamp: -1 });
 
-  socket.emit('send-classroom', { students: classroom.students, messages });
+  callback({ students: classroom.students, messages });
 };

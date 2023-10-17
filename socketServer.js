@@ -1,40 +1,12 @@
+import { Server } from 'socket.io';
+
 import authSocket from './middlewares/authSocket.js';
 import { ExamStore } from './mediasoupHandlers/examSession/ExamStore.js';
-import {
-  setSocketServerInstance,
-  handleGetProducers,
-  handleConsume,
-  handleCreateTransport,
-  handleTransportConnect,
-  handleTransportProduce,
-  handleTransportReceiveConnect,
-  handleConsumeResume,
-  handleJoinSession,
-} from './serverStore.js';
+import { Student } from './socketHandlers/students/Student.js';
+import { setSocketServerInstance } from './serverStore.js';
 import disconnectHandler from './socketHandlers/disconnectHandler.js';
 import { handleGetClassroom } from './socketHandlers/updates/updateClassroom.js';
-import { Server } from 'socket.io';
-import { finalChunk, uploadVideo } from './util/aws/uploadStream.js';
 const examSessions = new ExamStore();
-export class WebSocket {
-  constructor(socket) {
-    this.setSocket(socket);
-    this.setExamSocket(socket);
-    this.setClassSocket(socket);
-  }
-  setSocket(socket) {
-    this.socket = socket;
-  }
-  setExamSocket(socket) {
-    this.examSocket = socket;
-  }
-  setClassSocket(socket) {
-    this.classSocket = socket;
-  }
-  setIO(io) {
-    this.io = io;
-  }
-}
 
 const registerSocketServer = (server, worker) => {
   const io = new Server(server, {
@@ -56,76 +28,29 @@ const registerSocketServer = (server, worker) => {
     console.log('user connected');
     console.log(socket.id);
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       console.log('User Disconnected of id', socket.userId);
       disconnectHandler(socket);
       examSessions.disconnectSocket(socket);
     });
 
-    socket.on('video', (chuck) => {
-      console.log('video event emitted');
-      uploadVideo(chuck);
+    socket.on('update-classroom', (classroomId, callback) => {
+      handleGetClassroom(classroomId, callback);
     });
 
-    socket.on('chunk', () => {
-      console.log('final-chuck event emitted');
-
-      finalChunk();
+    socket.on('image', (data) => {
+      console.log(data);
     });
 
-    socket.on('update-classroom', (classroomId) => {
-      handleGetClassroom(classroomId, socket);
+    socket.on('studentImages', (callback) => {
+      Student.getImages(callback, socket);
     });
-
-    socket.on('new-session-initiated', () => {
-      console.log('received new session initiation');
-    });
-
-    socket.on('createSession', async ({ sessionId }, callback) => {
-      handleJoinSession({ sessionId }, callback, socket, worker);
-    });
-
-    socket.on('createWebRtcTransport', async ({ consumer }, callback) => {
-      handleCreateTransport({ consumer }, callback, socket.userId);
-    });
-
-    socket.on('transport-connect', ({ dtlsParameters }) => {
-      handleTransportConnect({ dtlsParameters }, socket.userId);
-    });
-
-    socket.on(
-      'transport-produce',
-      ({ kind, rtpParameters, appData }, callback) => {
-        handleTransportProduce(
-          { kind, rtpParameters, appData },
-          callback,
-          socket.userId
-        );
-      }
-    );
-
-    socket.on('getProducers', (callback) => {
-      handleGetProducers(callback, socket.userId);
-    });
-
-    socket.on('transport-recv-connect', handleTransportReceiveConnect);
-
-    socket.on(
-      'consume',
-      (
-        { rtpCapabilities, remoteProducerId, serverConsumerTransportId },
-        callback
-      ) => {
-        handleConsume(
-          { rtpCapabilities, remoteProducerId, serverConsumerTransportId },
-          callback,
-          socket
-        );
-      }
-    );
-    socket.on('consumer-resume', handleConsumeResume);
 
     // Exam Session Handlers
+    socket.on('examStatus', ({ examSessionId }, callback) => {
+      examSessions.getExamStatus({ examSessionId }, callback, socket);
+    });
+
     socket.on('newExamSession', ({ examSessionId }, callback) => {
       examSessions.joinExamSession(
         { examSessionId },
@@ -207,8 +132,8 @@ const registerSocketServer = (server, worker) => {
       examSessions.reportViolation({ examSessionId, violation }, socket);
     });
 
-    socket.on('bHistory', ({ examSessionId, bHistory }) => {
-      examSessions.updateBrowsingHistory({ examSessionId, bHistory }, socket);
+    socket.on('bHistory', ({ examSessionId, history }) => {
+      examSessions.updateBrowsingHistory({ examSessionId, history }, socket);
     });
 
     //

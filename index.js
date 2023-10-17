@@ -76,11 +76,9 @@ const createNewWorker = async () => {
   registerSocketServer(httpServer, worker);
 })();
 
-
-
 mongoose
-  .connect(process.env.MONGO_URI || process.env.MONGO_URI_LOCAL)
-  .then(() => {
+  .connect(process.env.MONGO_URI)
+  .then(async () => {
     httpServer.listen(process.env.PORT, () => {
       console.log(`App is listening on port ${process.env.PORT}`);
     });
