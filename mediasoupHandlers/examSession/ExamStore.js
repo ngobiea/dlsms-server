@@ -30,8 +30,6 @@ export class ExamStore {
       } else if (studentExamSession) {
         callback({ status: 'studentEnded' });
       }
-
-    
     } catch (error) {}
   }
 
@@ -67,6 +65,17 @@ export class ExamStore {
     }
   }
 
+  addStudentToDB({ examSessionId }, callback, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .addStudentToDB(examSessionId, socket, callback);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
   connectProducerTransport({ dtlsParameters, examSessionId }, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
@@ -235,6 +244,88 @@ export class ExamStore {
         this.examSessions
           .get(examSessionId)
           .updateBrowsingHistory(history, socket);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  endStudentSession({ examSessionId, studentId }) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .endStudentSession(examSessionId, studentId);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  createTutorTransport(
+    { examSessionId, isProducer, studentId },
+    callback,
+    socket
+  ) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .joinTutor(isProducer, studentId, callback, socket);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  oneTonOneSession({ examSessionId, studentId }, callback, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .setTutor2(studentId, callback, socket);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  createOneToOneTransport(
+    { examSessionId, isProducer, userId },
+    callback,
+    socket
+  ) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .addOneToOneTP(isProducer, callback, socket, userId);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  connectOneToOneProducerTransport({ examSessionId, dtlsParameters }, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions.get(examSessionId).connectOneToOnePT(dtlsParameters);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  oneToOneProducerOnProduce(
+    { examSessionId, kind, rtpParameters, appData, userId },
+    callback,
+    socket
+  ) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .addOneToOneProducer(
+            { kind, rtpParameters, appData, userId },
+            callback,
+            socket
+          );
       }
     } catch (error) {
       console.log(error);

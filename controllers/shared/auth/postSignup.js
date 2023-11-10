@@ -50,7 +50,10 @@ export const signup = async (req, res, next) => {
         expiresIn: process.env.JWT_EXPIRATION_TIME,
       }
     );
-    const verificationLink = `http://localhost:${process.env.PORT}/verify-email/${token}`;
+
+    const verificationLink = `${req.protocol}://${req.get(
+      'host'
+    )}/verify-email/${token}`;
 
     try {
       sendEmail(
@@ -66,7 +69,7 @@ export const signup = async (req, res, next) => {
 
     res
       .status(statusCode.CREATED)
-      .json({ message: `New ${accountType} created` });
+      .json({ message: `New ${accountType} created`, email });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = statusCode.INTERNAL_SERVER_ERROR;

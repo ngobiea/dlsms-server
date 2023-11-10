@@ -3,7 +3,6 @@ export class Participant {
     this.socket = socket;
     this.examSessionId = examSessionId;
     this.producerTransport = null;
-    this.sConsumerTransport = null;
     this.consumerTransports = new Map();
     this.producers = new Map();
     this.consumers = new Map();
@@ -31,15 +30,7 @@ export class Participant {
       this.producerTransport.close();
     });
   }
-  //student consumer transport for tutor
-  setsConsumerTransport(transport) {
-    this.sConsumerTransport = transport;
-    console.log('student added consumer transport');
-    this.sConsumerTransport.on('routerclose', () => {
-      console.log('router closed so transport closed');
-      this.sConsumerTransport.close();
-    });
-  }
+
   addConsumerTransport(transport, userId) {
     this.consumerTransports.set(userId, transport);
     console.log('tutor added consumer transport');
@@ -88,7 +79,6 @@ export class Participant {
         examSessionId: this.examSessionId,
         consumerId: consumer.id,
       });
-
       this.consumers.get(consumer.id).close();
       this.consumers.delete(consumer.id);
     });

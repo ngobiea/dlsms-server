@@ -8,6 +8,7 @@ import {
   ListPartsCommand,
   HeadObjectCommand,
   PutObjectCommand,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
@@ -129,6 +130,18 @@ export class AWS {
       console.log('Error deleting objects', err);
     }
   }
+  static async deleteS3Object(bucket, key) {
+    const params = {
+      Bucket: bucket,
+      Key: key,
+    };
+    try {
+      await s3.send(new DeleteObjectCommand(params));
+      console.log('Object deleted successfully');
+    } catch (err) {
+      console.log('Error deleting object', err);
+    }
+  }
 
   static async createMultipartUpload(Bucket, Key) {
     try {
@@ -183,5 +196,3 @@ export class AWS {
     }
   }
 }
-
-

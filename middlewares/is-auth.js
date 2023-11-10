@@ -21,7 +21,7 @@ export default (req, _res, next) => {
     throw error;
   }
 
-  req.userId = decodedToken.userId;
+  req.userId = decodedToken.userId.toString();
   req.accountType = decodedToken.accountType;
   next();
 };

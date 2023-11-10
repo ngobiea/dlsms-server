@@ -2,11 +2,13 @@ import { Server } from 'socket.io';
 
 import authSocket from './middlewares/authSocket.js';
 import { ExamStore } from './mediasoupHandlers/examSession/ExamStore.js';
+import { ClassStore } from './mediasoupHandlers/classSession/ClassStore.js';
 import { Student } from './socketHandlers/students/Student.js';
 import { setSocketServerInstance } from './serverStore.js';
 import disconnectHandler from './socketHandlers/disconnectHandler.js';
 import { handleGetClassroom } from './socketHandlers/updates/updateClassroom.js';
 const examSessions = new ExamStore();
+const classSessions = new ClassStore();
 
 const registerSocketServer = (server, worker) => {
   const io = new Server(server, {
@@ -24,6 +26,7 @@ const registerSocketServer = (server, worker) => {
 
   io.on('connection', (socket) => {
     examSessions.setIO(io);
+    classSessions.setIO(io);
 
     console.log('user connected');
     console.log(socket.id);
@@ -32,18 +35,99 @@ const registerSocketServer = (server, worker) => {
       console.log('User Disconnected of id', socket.userId);
       disconnectHandler(socket);
       examSessions.disconnectSocket(socket);
+      classSessions.disconnectSocket(socket);
     });
 
     socket.on('update-classroom', (classroomId, callback) => {
       handleGetClassroom(classroomId, callback);
     });
 
-    socket.on('image', (data) => {
-      console.log(data);
-    });
-
     socket.on('studentImages', (callback) => {
       Student.getImages(callback, socket);
+    });
+    // Class Session Handlers
+    socket.on('newSession', ({ classSessionId }, callback) => {
+      console.log(classSessionId);
+      classSessions.joinClassSession(
+        { classSessionId },
+        callback,
+        socket,
+        worker,
+        io
+      );
+    });
+
+    socket.on(
+      'createClassSessionTp',
+      ({ classSessionId, isProducer, userId }, callback) => {
+        classSessions.createTransport(
+          { classSessionId, isProducer, userId },
+          callback,
+          socket
+        );
+      }
+    );
+
+    socket.on('CSOnPTConnect', ({ classSessionId, dtlsParameters }) => {
+      classSessions.connectProducerTransport(
+        { dtlsParameters, classSessionId },
+        socket
+      );
+    });
+    socket.on('CSOnCTConnect', ({ classSessionId, dtlsParameters, userId }) => {
+      classSessions.connectConsumerTransport(
+        { dtlsParameters, classSessionId, userId },
+        socket
+      );
+    });
+    socket.on(
+      'CSOnPTProduce',
+      ({ classSessionId, kind, rtpParameters, appData }, callback) => {
+        classSessions.producerTransportOnProduce(
+          { classSessionId, kind, rtpParameters, appData },
+          callback,
+          socket
+        );
+      }
+    );
+    socket.on(
+      'CSOnCTConsume',
+      ({ classSessionId, rtpCapabilities, userId, producerId }, callback) => {
+        classSessions.consumerTransportOnConsume(
+          {
+            classSessionId,
+            rtpCapabilities,
+            producerId,
+            userId,
+          },
+          callback,
+          socket
+        );
+      }
+    );
+    socket.on('resumeCSP', ({ classSessionId, producerId }, callback) => {
+      classSessions.resumeProducer(
+        { classSessionId, producerId },
+        callback,
+        socket
+      );
+    });
+    socket.on('pauseCSP', ({ classSessionId, producerId }, callback) => {
+      classSessions.pauseProducer(
+        { classSessionId, producerId },
+        callback,
+        socket
+      );
+    });
+    socket.on('closeCSP', ({ classSessionId, producerId }, callback) => {
+      classSessions.closeProducer(
+        { classSessionId, producerId },
+        callback,
+        socket
+      );
+    });
+    socket.on('resumeCSC', ({ classSessionId, consumerId }) => {
+      classSessions.resumeConsumer({ classSessionId, consumerId }, socket);
     });
 
     // Exam Session Handlers
@@ -59,6 +143,14 @@ const registerSocketServer = (server, worker) => {
         worker,
         io
       );
+    });
+
+    socket.on('tutorJoin', ({ examSessionId, userId }, callback) => {
+      examSessions.tutorJoin({ examSessionId, userId }, callback, socket);
+    });
+
+    socket.on('addStudentToExam', ({ examSessionId }, callback) => {
+      examSessions.addStudentToDB({ examSessionId }, callback, socket);
     });
     // createExamSessionTp event handler
     socket.on(
@@ -140,6 +232,44 @@ const registerSocketServer = (server, worker) => {
     socket.on('ESR-Chunk', ({ examSessionId, index, chunk }) => {
       examSessions.uploadChunk({ examSessionId, index, chunk }, socket);
     });
+
+    socket.on('endStudentSession', ({ examSessionId, studentId }) => {
+      examSessions.endStudentSession({ examSessionId, studentId }, socket);
+    });
+
+    socket.on('oneToOneSession', ({ examSessionId, studentId }, callback) => {
+      examSessions.oneTonOneSession(
+        { examSessionId, studentId },
+        callback,
+        socket
+      );
+    });
+    socket.on(
+      'createOneToOneTp',
+      ({ examSessionId, isProducer, userId }, callback) => {
+        examSessions.createOneToOneTransport(
+          { examSessionId, isProducer, userId },
+          callback,
+          socket
+        );
+      }
+    );
+    socket.on('connectOneToOnePT', ({ examSessionId, dtlsParameters }) => {
+      examSessions.connectOneToOneProducerTransport({
+        examSessionId,
+        dtlsParameters,
+      });
+    });
+    socket.on(
+      'onOneToOneProduce',
+      ({ examSessionId, kind, rtpParameters, appData, userId }, callback) => {
+        examSessions.oneToOneProducerOnProduce(
+          { examSessionId, kind, rtpParameters, userId, appData },
+          callback,
+          socket
+        );
+      }
+    );
   });
 };
 

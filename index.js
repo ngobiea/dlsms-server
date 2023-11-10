@@ -40,6 +40,7 @@ app.use((error, _req, res, _next) => {
   const { message, data, type } = error;
   res.status(status).json({ message, data, type });
 });
+
 const createNewWorker = async () => {
   const newWorker = await createWorker({
     logLevel: 'debug',
@@ -71,6 +72,7 @@ const createNewWorker = async () => {
   });
   return newWorker;
 };
+
 (async () => {
   worker = await createNewWorker();
   registerSocketServer(httpServer, worker);

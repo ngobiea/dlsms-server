@@ -4,6 +4,7 @@ import Classroom from '../../../model/Classroom.js';
 import { statusCode } from '../../../util/statusCodes.js';
 import { handleValidationErrors } from '../../../util/validation.js';
 import { updateClassroomMembers } from '../../../socketHandlers/updates/updateClassroomMembers.js';
+import { AWS } from '../../../util/aws/AWS.js';
 export const postJoinClassroom = async (req, res, next) => {
   const { userId } = req;
   upload(process.env.TRAINING_BUCKET, userId).array('files')(
@@ -16,6 +17,7 @@ export const postJoinClassroom = async (req, res, next) => {
       handleValidationErrors(req, res, async () => {
         try {
           const { files } = req;
+          console.log(files);
           const { classroomId } = req.body;
           // check if user is a student
           const student = await User.findById(
@@ -50,32 +52,47 @@ export const postJoinClassroom = async (req, res, next) => {
               mimetype: file.mimetype,
             });
           });
+          const isJoined = classroom.students.find(
+            (studentId) => studentId.toString() === req.userId
+          );
+          if (isJoined) {
+            await Promise.all(
+              files.map((file) =>
+                AWS.deleteS3Object(process.env.TRAINING_BUCKET, file.key)
+              )
+            );
+            res.status(statusCode.CONFLICT).json({
+              message: 'Student already joined classroom',
+            });
+          } else {
+            // add student to classroom
 
-          // add student to classroom
-          classroom.students.push(student);
-          await student.save();
-          await classroom.save();
-          // update classroom members
-          const data = {
-            classroom: {
-              _id: classroom._id.toString(),
-              name: classroom.name,
-            },
-            student: {
-              firstName: student.firstName,
-              lastName: student.lastName,
-              _id: student._id.toString(),
-              studentId: student.studentId,
-            },
-          };
-          updateClassroomMembers(data);
-          res
-            .status(statusCode.CREATED)
-            .json({
+            classroom.students.push(student._id);
+            await classroom.save();
+            await student.save();
+            const data = {
+              classroom: {
+                _id: classroom._id.toString(),
+                name: classroom.name,
+              },
+              student: {
+                firstName: student.firstName,
+                lastName: student.lastName,
+                _id: student._id.toString(),
+                studentId: student.studentId,
+              },
+            };
+            updateClassroomMembers(data);
+            res.status(statusCode.CREATED).json({
               message: 'success',
               classroom: data.classroom,
               student: data.student,
             });
+          }
+
+          await student.save();
+          await classroom.save();
+          // update classroom members
         } catch (error) {
           if (!error.statusCode) {
             error.statusCode = statusCode.INTERNAL_SERVER_ERROR;

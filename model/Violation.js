@@ -1,6 +1,9 @@
 import { Schema } from 'mongoose';
 
 const Violation = new Schema({
+  type: {
+    type: String,
+  },
   title: {
     type: String,
   },
