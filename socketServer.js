@@ -145,24 +145,13 @@ const registerSocketServer = (server, worker) => {
       );
     });
 
-    socket.on('tutorJoin', ({ examSessionId, userId }, callback) => {
-      examSessions.tutorJoin({ examSessionId, userId }, callback, socket);
-    });
-
     socket.on('addStudentToExam', ({ examSessionId }, callback) => {
       examSessions.addStudentToDB({ examSessionId }, callback, socket);
     });
     // createExamSessionTp event handler
-    socket.on(
-      'createExamSessionTp',
-      ({ examSessionId, isProducer, userId }, callback) => {
-        examSessions.createTransport(
-          { examSessionId, isProducer, userId },
-          callback,
-          socket
-        );
-      }
-    );
+    socket.on('createExamSessionTp', ({ examSessionId, userId }, callback) => {
+      examSessions.createTransport({ examSessionId, userId }, callback, socket);
+    });
     // ESOnPTConnect event handler
     socket.on('ESOnPTConnect', ({ examSessionId, dtlsParameters }) => {
       examSessions.connectProducerTransport(
@@ -212,8 +201,22 @@ const registerSocketServer = (server, worker) => {
       examSessions.eSConsumeResume({ examSessionId, consumerId }, socket);
     });
     // closeESProducer event handler
-    socket.on('closeESProducer', ({ examSessionId, producerId }, callback) => {
+    socket.on('closeESP', ({ examSessionId, producerId }, callback) => {
       examSessions.closeProducer(
+        { examSessionId, producerId },
+        callback,
+        socket
+      );
+    });
+    socket.on('pauseESP', ({ examSessionId, producerId }, callback) => {
+      examSessions.pauseProducer(
+        { examSessionId, producerId },
+        callback,
+        socket
+      );
+    });
+    socket.on('resumeESP', ({ examSessionId, producerId }, callback) => {
+      examSessions.resumeProducer(
         { examSessionId, producerId },
         callback,
         socket
@@ -270,6 +273,28 @@ const registerSocketServer = (server, worker) => {
         );
       }
     );
+    socket.on('connectOneToOneCT', ({ examSessionId, dtlsParameters }) => {
+      examSessions.connectOneToOneConsumerTransport({
+        examSessionId,
+        dtlsParameters,
+      });
+    });
+    socket.on(
+      'oneToOneConsumer',
+      ({ examSessionId, producerId, rtpCapabilities, userId }, callback) => {
+        examSessions.oneToOneConsumer(
+          { examSessionId, producerId, rtpCapabilities, userId },
+          callback,
+          socket
+        );
+      }
+    );
+    socket.on('resumeOneC', ({ examSessionId, consumerId }) => {
+      examSessions.resumeOneToOneConsumer(
+        { examSessionId, consumerId },
+        socket
+      );
+    });
   });
 };
 

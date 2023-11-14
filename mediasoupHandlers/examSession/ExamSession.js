@@ -207,26 +207,15 @@ export class ExamSes {
   async addProducer({ kind, rtpParameters, appData }, callback, socket) {
     let producer;
     try {
-      if (socket.user.role === 'student') {
-        const student = this.students.get(socket.user._id.toString());
-        producer = await student.producerTransport.produce({
-          kind,
-          rtpParameters,
-          appData,
-        });
-
-        student.addProducer(producer);
-        this.informTutorOnNewProducer(socket, producer.id);
-        this.students.set(socket.user._id.toString(), student);
-      } else if (socket.user.role === 'tutor') {
-        producer = await this.tutor.producerTransport.produce({
-          kind,
-          rtpParameters,
-          appData,
-        });
-        this.tutor.addProducer(producer);
-      }
-
+      const student = this.students.get(socket.user._id.toString());
+      producer = await student.producerTransport.produce({
+        kind,
+        rtpParameters,
+        appData,
+      });
+      student.addProducer(producer);
+      this.informTutorOnNewProducer(socket, producer.id);
+      this.students.set(socket.user._id.toString(), student);
       callback({ id: producer.id });
     } catch (error) {
       console.log(error);
@@ -249,6 +238,12 @@ export class ExamSes {
       this.tutor.socket.emit('newESSProducer', {
         examSessionId: this.examSessionId,
         userId: socket.userId,
+        producerId,
+      });
+    }
+    if (this.tutor2) {
+      this.tutor2.socket.emit('oneProducer', {
+        examSessionId: this.examSessionId,
         producerId,
       });
     }
@@ -293,8 +288,8 @@ export class ExamSes {
           id: consumer.id,
           kind: consumer.kind,
           rtpParameters: consumer.rtpParameters,
-          producerAppData: this.getProducerAppData(producerId),
-          userData: this.getStudentData(producerId),
+          producerAppData: this.getProducerAppData(userId, producerId),
+          userData: this.getStudentData(userId),
         };
         callback({ serverParams });
       }
@@ -314,24 +309,22 @@ export class ExamSes {
     }
   }
   /** */
-  getProducerAppData(producerId) {
-    let producerAppData;
-    this.students.forEach((student) => {
-      if (student.producers.has(producerId)) {
-        producerAppData = student.producers.get(producerId).appData;
-      }
-    });
-    return producerAppData;
+  getProducerAppData(userId, producerId) {
+    try {
+      return this.students.get(userId).producers.get(producerId).appData;
+    } catch (error) {
+      console.log(error);
+      return {};
+    }
   }
   /** */
-  getStudentData(producerId) {
-    let studentData;
-    this.students.forEach((student) => {
-      if (student.producers.has(producerId)) {
-        studentData = student.producers.get(producerId).user;
-      }
-    });
-    return studentData;
+  getStudentData(userId) {
+    try {
+      return this.students.get(userId).socket.user;
+    } catch (error) {
+      console.log(error);
+      return {};
+    }
   }
   /** */
   closeProducer(producerId, socket, callback) {
@@ -339,11 +332,6 @@ export class ExamSes {
     try {
       if (socket.user.role === 'student') {
         console.log('student closing producer');
-        console.log(
-          this.students
-            .get(socket.user._id.toString())
-            .producers.get(producerId).appData
-        );
         this.students
           .get(socket.user._id.toString())
           .producers.get(producerId)
@@ -351,30 +339,52 @@ export class ExamSes {
         this.students
           .get(socket.user._id.toString())
           .producers.delete(producerId);
+        callback({ closed: true });
       } else if (socket.user.role === 'tutor') {
         console.log('tutor closing producer');
-        this.tutor.producers.get(producerId).close();
-        this.tutor.producers.delete(producerId);
+        this.tutor2.producers.get(producerId).close();
+        this.tutor2.producers.delete(producerId);
+        callback({ closed: true });
       }
-
-      callback({ producerId });
     } catch (error) {
       console.log(error);
+      callback({ closed: false });
     }
   }
 
   /** */
-  async pauseProducer(producerId, socket) {
+  async pauseProducer(producerId, socket, callback) {
     try {
       if (socket.user.role === 'student') {
         await this.students
           .get(socket.user._id.toString())
           .producers.get(producerId)
           .pause();
+        callback({ paused: true });
+        return;
       } else if (socket.user.role === 'tutor') {
-        await this.tutor.producers.get(producerId).pause();
+        await this.tutor2.producers.get(producerId).pause();
       }
     } catch (error) {
+      console.log(error);
+    }
+  }
+
+  /** */
+  async resumeProducer(producerId, socket, callback) {
+    try {
+      if (socket.user.role === 'student') {
+        await this.students
+          .get(socket.userId)
+          .producers.get(producerId)
+          .resume();
+        callback({ resumed: true });
+      } else if (socket.user.role === 'tutor') {
+        await this.tutor2.producers.get(producerId).resume();
+        callback({ resumed: true });
+      }
+    } catch (error) {
+      callback({ resumed: false });
       console.log(error);
     }
   }
@@ -385,7 +395,7 @@ export class ExamSes {
       if (socket.user.role === 'student') {
         this.removeStudent(socket);
       } else if (socket.user.role === 'tutor') {
-        this.removeTutor();
+        this.removeTutor(socket);
       }
     } catch (error) {
       console.log(error);
@@ -454,23 +464,44 @@ export class ExamSes {
     } catch (error) {}
   }
   /** */
-  removeTutor() {
+  removeTutor(socket) {
     try {
-      if (this.tutor) {
-        if (this.tutor.producerTransport) {
-          this.tutor.producerTransport.close();
-        }
-        this.tutor.consumerTransports.forEach((transport) => {
-          transport.close();
+      if (this.tutor2) {
+        this.tutor2.producerTransport.close();
+        this.tutor2.consumerTransports.forEach((transport, key) => {
+          this.informStudentsOnTutorLeave(transport, key,socket);
         });
-        this.tutor = null;
-        console.log('tutor removed from exam session');
+        this.tutor2 = null;
+      } else if (this.tutor) {
+        this.tutor.socket
+          .timeout(this.ackResponseTimeout)
+          .emit('ESOpen', (error) => {
+            if (error) {
+              this.tutor.producerTransport.close();
+              this.tutor.consumerTransports.forEach((transport) => {
+                transport.close();
+              });
+            } else {
+              console.log('Exam Session open');
+            }
+          });
+        console.log('tutor not found in exam session');
       }
     } catch (error) {
       console.log(error);
     }
   }
-
+  informStudentsOnTutorLeave(transport, userId, socket) {
+    try {
+      transport.close();
+      this.students.get(userId).socket.emit('closeESCT', {
+        examSessionId: this.examSessionId,
+        userId: socket.userId,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
   endStudentSession(examSessionId, studentId) {
     const student = this.students.get(studentId);
     if (student) {
@@ -603,7 +634,7 @@ export class ExamSes {
       } else if (socket.user.role === 'student') {
         this.students
           .get(socket.user._id.toString())
-          .setSConsumerTransport(transport);
+          .addConsumerTransport(transport, userId);
       }
       callback({
         serverParams: {
@@ -654,13 +685,90 @@ export class ExamSes {
       console.log(error);
     }
   }
-  informOneStudentOnProducer(socket, producerId, userId) {
+  informOneStudentOnProducer(producerId, userId) {
     if (this.students.has(userId)) {
       this.students.get(userId).socket.emit('tutorProducer', {
         examSessionId: this.examSessionId,
         producerId,
-        userId: socket.userId,
       });
+    }
+  }
+  async connectOneToOneCT(dtlsParameters, userId) {
+    try {
+      if (this.tutor2?.consumerTransports.has(userId)) {
+        await this.tutor2.consumerTransports.get(userId).connect({
+          dtlsParameters,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async addOneToOneConsumer(
+    { rtpCapabilities, producerId, userId },
+    callback,
+    socket
+  ) {
+    const serverParams = {};
+    try {
+      if (this.router.canConsume({ producerId, rtpCapabilities })) {
+        if (socket.user.role === 'tutor') {
+          const consumer = await this.tutor2.consumerTransports
+            .get(userId)
+            .consume({
+              producerId,
+              rtpCapabilities,
+              paused: true,
+            });
+          this.tutor2.addConsumer(consumer);
+          serverParams.id = consumer.id;
+          serverParams.kind = consumer.kind;
+          serverParams.rtpParameters = consumer.rtpParameters;
+          serverParams.producerAppData = this.getProducerAppData(
+            userId,
+            producerId
+          );
+          serverParams.userData = this.getStudentData(userId);
+        } else if (socket.user.role === 'student') {
+          const consumer = await this.students
+            .get(socket.user._id.toString())
+            .sConsumerTransport.consume({
+              producerId,
+              rtpCapabilities,
+              paused: true,
+            });
+          this.students.get(socket.user._id.toString()).addConsumer(consumer);
+          serverParams.id = consumer.id;
+          serverParams.kind = consumer.kind;
+          serverParams.rtpParameters = consumer.rtpParameters;
+          serverParams.producerAppData =
+            this.tutor2.producers.get(producerId).appData;
+          serverParams.userData = this.tutor2.socket.user;
+        }
+        callback({ serverParams });
+      } else {
+        callback({ serverParams: { error: 'cannot consume' } });
+      }
+    } catch (error) {
+      console.log(error);
+      callback({ serverParams: { error } });
+    }
+  }
+  resumeOneToOneConsumer(consumerId, socket) {
+    try {
+      if (
+        socket.user.role === 'tutor' &&
+        this.tutor2?.consumers.has(consumerId)
+      ) {
+        this.tutor2.consumers.get(consumerId).resume();
+      } else if (
+        socket.user.role === 'student' &&
+        this.students.has(socket.userId)
+      ) {
+        this.students.get(socket.userId).consumers.get(consumerId).resume();
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 }

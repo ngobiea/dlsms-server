@@ -51,12 +51,12 @@ export class ExamStore {
     }
   }
 
-  createTransport({ examSessionId, isProducer, userId }, callback, socket) {
+  createTransport({ examSessionId, userId }, callback, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
         this.examSessions
           .get(examSessionId)
-          .addTransport(isProducer, userId, callback, socket);
+          .addTransport(userId, callback, socket);
       } else {
         console.log('Exam session does not exist');
       }
@@ -175,10 +175,23 @@ export class ExamStore {
     }
   }
 
-  pauseProducer({ examSessionId, producerId }, socket) {
+  pauseProducer({ examSessionId, producerId }, callback, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
-        this.examSessions.get(examSessionId).pauseProducer(producerId, socket);
+        this.examSessions
+          .get(examSessionId)
+          .pauseProducer(producerId, socket, callback);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  resumeProducer({ examSessionId, producerId }, callback, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .resumeProducer(producerId, socket, callback);
       }
     } catch (error) {
       console.log(error);
@@ -199,7 +212,6 @@ export class ExamStore {
     try {
       this.examSessions.forEach((examSession) => {
         examSession.removeUser(socket);
-
         if (!examSession.tutor && examSession.students.size === 0) {
           console.log('closing router');
           examSession.getRouter().close();
@@ -303,7 +315,7 @@ export class ExamStore {
       console.log(error);
     }
   }
-  connectOneToOneProducerTransport({ examSessionId, dtlsParameters }, socket) {
+  connectOneToOneProducerTransport({ examSessionId, dtlsParameters }) {
     try {
       if (this.examSessions.has(examSessionId)) {
         this.examSessions.get(examSessionId).connectOneToOnePT(dtlsParameters);
@@ -326,6 +338,48 @@ export class ExamStore {
             callback,
             socket
           );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  connectOneToOneConsumerTransport({ examSessionId, dtlsParameters }, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions.get(examSessionId).connectOneToOneCT(dtlsParameters);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  oneToOneConsumer(
+    { examSessionId, producerId, rtpCapabilities, userId },
+    callback,
+    socket
+  ) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .addOneToOneConsumer(
+            { producerId, rtpCapabilities, userId },
+            callback,
+            socket
+          );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  resumeOneToOneConsumer({ examSessionId, consumerId }, socket) {
+    try {
+      if (this.examSessions.has(examSessionId)) {
+        this.examSessions
+          .get(examSessionId)
+          .resumeOneToOneConsumer(consumerId, socket);
       }
     } catch (error) {
       console.log(error);

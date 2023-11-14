@@ -85,18 +85,19 @@ export class Participant {
 
     this.consumers.get(consumer.id).on('producerpause', () => {
       console.log('associated producer pause so consumer pause');
+      this.socket.emit('pauseESConsumer', {
+        examSessionId: this.examSessionId,
+        consumerId: consumer.id,
+      });
+      this.consumers.get(consumer.id).pause();
     });
 
     this.consumers.get(consumer.id).on('producerresume', () => {
       console.log('associated producer resume so consumer resume');
-    });
-
-    this.consumers.get(consumer.id).on('score', () => {
-      console.log('associated producer closed so consumer closed');
-    });
-
-    this.consumers.get(consumer.id).on('layerschange', () => {
-      console.log('consumer paused');
+      this.socket.emit('resumeESConsumer', {
+        examSessionId: this.examSessionId,
+        consumerId: consumer.id,
+      });
     });
   }
 }
