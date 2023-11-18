@@ -179,4 +179,26 @@ export class ClassStore {
       console.log(error);
     }
   }
+  shareScreen({ classSessionId }, socket) {
+    try {
+      if (this.classSessions.has(classSessionId)) {
+        this.classSessions.get(classSessionId).shareScreen(socket);
+      } else {
+        console.log('classSession not found SS');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  stopScreenShare({ classSessionId }, socket) {
+    try {
+      if (this.classSessions.has(classSessionId)) {
+        this.classSessions.get(classSessionId).stopScreenShare(socket);
+      } else {
+        console.log('classSession not found SSS');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

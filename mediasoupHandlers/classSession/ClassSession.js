@@ -61,7 +61,6 @@ export class ClassSes {
       callback({ error: 'Fail to create transport' });
     }
   }
-  
 
   async connectProducerTransport(dtlsParameters, socket) {
     try {
@@ -266,4 +265,34 @@ export class ClassSes {
       console.log(error);
     }
   }
+  shareScreen(socket) {
+    console.log(`share screen ${socket.userId}`)
+    try {
+      this.participants.forEach((participant, key) => {
+        if (key !== socket.userId) {
+          participant.socket.emit('newCSScreen', {
+            classSessionId: this.classSessionId,
+            userId: socket.userId,
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  stopScreenShare(socket) {
+    console.log(`stop screen share ${socket.userId}`)
+    try {
+      this.participants.forEach((participant, key) => {
+        if (key !== socket.userId) {
+          participant.socket.emit('closeCSScreen', {
+            classSessionId: this.classSessionId,
+            userId: socket.userId,
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+   }
 }

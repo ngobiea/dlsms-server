@@ -129,6 +129,12 @@ const registerSocketServer = (server, worker) => {
     socket.on('resumeCSC', ({ classSessionId, consumerId }) => {
       classSessions.resumeConsumer({ classSessionId, consumerId }, socket);
     });
+    socket.on('shareScreen', ({ classSessionId }) => {
+      classSessions.shareScreen({ classSessionId }, socket);
+    });
+    socket.on('stopShareScreen', ({ classSessionId }) => {
+      classSessions.stopScreenShare({ classSessionId }, socket);
+    });
 
     // Exam Session Handlers
     socket.on('examStatus', ({ examSessionId }, callback) => {
@@ -273,12 +279,19 @@ const registerSocketServer = (server, worker) => {
         );
       }
     );
-    socket.on('connectOneToOneCT', ({ examSessionId, dtlsParameters }) => {
-      examSessions.connectOneToOneConsumerTransport({
-        examSessionId,
-        dtlsParameters,
-      });
-    });
+    socket.on(
+      'connectOneToOneCT',
+      ({ examSessionId, dtlsParameters, userId }) => {
+        examSessions.connectOneToOneConsumerTransport(
+          {
+            examSessionId,
+            dtlsParameters,
+            userId,
+          },
+          socket
+        );
+      }
+    );
     socket.on(
       'oneToOneConsumer',
       ({ examSessionId, producerId, rtpCapabilities, userId }, callback) => {

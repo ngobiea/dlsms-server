@@ -469,7 +469,7 @@ export class ExamSes {
       if (this.tutor2) {
         this.tutor2.producerTransport.close();
         this.tutor2.consumerTransports.forEach((transport, key) => {
-          this.informStudentsOnTutorLeave(transport, key,socket);
+          this.informStudentsOnTutorLeave(transport, key, socket);
         });
         this.tutor2 = null;
       } else if (this.tutor) {
@@ -477,7 +477,6 @@ export class ExamSes {
           .timeout(this.ackResponseTimeout)
           .emit('ESOpen', (error) => {
             if (error) {
-              this.tutor.producerTransport.close();
               this.tutor.consumerTransports.forEach((transport) => {
                 transport.close();
               });
@@ -669,8 +668,7 @@ export class ExamSes {
   }
   async addOneToOneProducer(
     { kind, rtpParameters, appData, userId },
-    callback,
-    socket
+    callback
   ) {
     try {
       const producer = await this.tutor2.producerTransport.produce({
@@ -679,7 +677,7 @@ export class ExamSes {
         appData,
       });
       this.tutor2.addProducer(producer);
-      this.informOneStudentOnProducer(socket, producer.id, userId);
+      this.informOneStudentOnProducer(producer.id, userId);
       callback({ id: producer.id });
     } catch (error) {
       console.log(error);
@@ -693,12 +691,17 @@ export class ExamSes {
       });
     }
   }
-  async connectOneToOneCT(dtlsParameters, userId) {
+  async connectOneToOneCT(dtlsParameters, userId, socket) {
     try {
-      if (this.tutor2?.consumerTransports.has(userId)) {
-        await this.tutor2.consumerTransports.get(userId).connect({
-          dtlsParameters,
-        });
+      if (socket.user.role === 'student') {
+        await this.students
+          .get(socket.userId)
+          .consumerTransports.get(userId)
+          .connect({ dtlsParameters });
+      } else if (socket.user.role === 'tutor') {
+        await this.tutor2.consumerTransports
+          .get(userId)
+          .connect({ dtlsParameters });
       }
     } catch (error) {
       console.log(error);
@@ -731,8 +734,9 @@ export class ExamSes {
           serverParams.userData = this.getStudentData(userId);
         } else if (socket.user.role === 'student') {
           const consumer = await this.students
-            .get(socket.user._id.toString())
-            .sConsumerTransport.consume({
+            .get(socket.userId)
+            .consumerTransports.get(userId)
+            .consume({
               producerId,
               rtpCapabilities,
               paused: true,
@@ -754,18 +758,15 @@ export class ExamSes {
       callback({ serverParams: { error } });
     }
   }
-  resumeOneToOneConsumer(consumerId, socket) {
+  async resumeOneToOneConsumer(consumerId, socket) {
     try {
-      if (
-        socket.user.role === 'tutor' &&
-        this.tutor2?.consumers.has(consumerId)
-      ) {
-        this.tutor2.consumers.get(consumerId).resume();
-      } else if (
-        socket.user.role === 'student' &&
-        this.students.has(socket.userId)
-      ) {
-        this.students.get(socket.userId).consumers.get(consumerId).resume();
+      if (socket.user.role === 'tutor') {
+        await this.tutor2.consumers.get(consumerId).resume();
+      } else if (socket.user.role === 'student') {
+        await this.students
+          .get(socket.userId)
+          .consumers.get(consumerId)
+          .resume();
       }
     } catch (error) {
       console.log(error);

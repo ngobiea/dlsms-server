@@ -344,10 +344,15 @@ export class ExamStore {
     }
   }
 
-  connectOneToOneConsumerTransport({ examSessionId, dtlsParameters }, socket) {
+  connectOneToOneConsumerTransport(
+    { examSessionId, dtlsParameters, userId },
+    socket
+  ) {
     try {
       if (this.examSessions.has(examSessionId)) {
-        this.examSessions.get(examSessionId).connectOneToOneCT(dtlsParameters);
+        this.examSessions
+          .get(examSessionId)
+          .connectOneToOneCT(dtlsParameters, userId, socket);
       }
     } catch (error) {
       console.log(error);
