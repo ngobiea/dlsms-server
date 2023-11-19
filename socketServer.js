@@ -56,6 +56,9 @@ const registerSocketServer = (server, worker) => {
         io
       );
     });
+    socket.on('addStudentToClassSession', ({ classSessionId }, callback) => {
+      classSessions.addStudentToDB({ classSessionId }, callback, socket);
+    });
 
     socket.on(
       'createClassSessionTp',
@@ -134,6 +137,19 @@ const registerSocketServer = (server, worker) => {
     });
     socket.on('stopShareScreen', ({ classSessionId }) => {
       classSessions.stopScreenShare({ classSessionId }, socket);
+    });
+    socket.on('recording', ({ classSessionId, state }) => {
+      classSessions.record({ classSessionId, state }, socket);
+    });
+
+    socket.on('verify', ({ classSessionId, verify }) => {
+      classSessions.verify({ classSessionId, verify }, socket);
+    });
+    socket.on('endClassSession', ({ classSessionId }, callback) => {
+      classSessions.endClassSession({ classSessionId }, callback, socket);
+    });
+    socket.on('classStatus', ({ classSessionId }, callback) => {
+      classSessions.getClassStatus({ classSessionId }, callback);
     });
 
     // Exam Session Handlers

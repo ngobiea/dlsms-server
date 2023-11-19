@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 
-
 const ClassSession = new Schema({
   title: {
     type: String,
@@ -10,14 +9,15 @@ const ClassSession = new Schema({
     type: String,
     required: true,
   },
-  date: {
-    type: Date,
-  },
   startDate: {
     type: Date,
   },
   endDate: {
     type: Date,
+  },
+  status: {
+    type: String,
+    default: 'pending',
   },
   tutor: {
     type: Schema.Types.ObjectId,

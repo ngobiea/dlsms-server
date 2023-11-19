@@ -13,10 +13,10 @@ import {
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
 const s3 = new S3Client({
-  region: process.env.AWS_REGION_1,
+  region: process.env.AWS_REGION,
 });
 const sesClient = new SESClient({
-  region: process.env.AWS_REGION_1,
+  region: process.env.AWS_REGION,
 });
 
 export class AWS {

@@ -1,5 +1,7 @@
 import { mediaCodecs } from '../../mediasoupServer.js';
 import { ClassSes } from './ClassSession.js';
+import ClassSession from '../../model/ClassSession.js';
+
 export class ClassStore {
   constructor() {
     this.classSessions = new Map();
@@ -7,6 +9,19 @@ export class ClassStore {
   }
   setIO(io) {
     this.io = io;
+  }
+ async getClassStatus({ classSessionId }, callback) {
+    try {
+      const classSession = await ClassSession.findById(classSessionId);
+      if (classSession) {
+        callback({ status: classSession.status });
+      } else {
+        callback({ error: 'invalid' });
+      }
+    } catch (error) {
+      callback({ error: 'invalid' });
+      console.log(error);
+    }
   }
   async joinClassSession({ classSessionId }, callback, socket, worker, io) {
     try {
@@ -23,6 +38,18 @@ export class ClassStore {
     } catch (error) {
       console.log(error);
       callback({ error });
+    }
+  }
+
+  async addStudentToDB({ classSessionId }, callback, socket) {
+    try {
+      if (this.classSessions.has(classSessionId)) {
+        this.classSessions.get(classSessionId).addStudentToDB(callback, socket);
+      } else {
+        console.log('classSession not found ATS');
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
   createTransport({ classSessionId, isProducer, userId }, callback, socket) {
@@ -196,6 +223,41 @@ export class ClassStore {
         this.classSessions.get(classSessionId).stopScreenShare(socket);
       } else {
         console.log('classSession not found SSS');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  verify({ classSessionId, verify }, socket) {
+    try {
+      if (this.classSessions.has(classSessionId)) {
+        this.classSessions.get(classSessionId).verify(verify, socket);
+      } else {
+        console.log('classSession not found V');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  record({ classSessionId, state }, socket) {
+    try {
+      if (this.classSessions.has(classSessionId)) {
+        this.classSessions.get(classSessionId).record(state, socket);
+      } else {
+        console.log('classSession not found R');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  endClassSession({ classSessionId }, callback, socket) {
+    try {
+      if (this.classSessions.has(classSessionId)) {
+        this.classSessions
+          .get(classSessionId)
+          .endClassSession(callback, socket);
+      } else {
+        console.log('classSession not found ECS');
       }
     } catch (error) {
       console.log(error);

@@ -41,6 +41,7 @@ app.use((error, _req, res, _next) => {
   res.status(status).json({ message, data, type });
 });
 
+console.log(process.env)
 const createNewWorker = async () => {
   const newWorker = await createWorker({
     logLevel: 'debug',

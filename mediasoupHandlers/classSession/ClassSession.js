@@ -1,5 +1,7 @@
 import { createWebRtcTransport } from '../../mediasoupServer.js';
 import { ClassSessionParticipants } from './ClassSessionParticipants.js';
+import ClassSession from '../../model/ClassSession.js';
+import StudentClassSession from '../../model/StudentClassSession.js';
 export class ClassSes {
   constructor(router, classSessionId, io) {
     this.router = router;
@@ -7,6 +9,7 @@ export class ClassSes {
     this.io = io;
     this.participants = new Map();
     this.setRouter(router);
+    this.isRecording = false;
   }
 
   setRouter(router) {
@@ -34,6 +37,36 @@ export class ClassSes {
     } catch (error) {
       console.log(error);
       callback({ error: 'Fail to get rtpCapabilities' });
+    }
+  }
+  async addStudentToDB(callback, socket) {
+    try {
+      const studentInSession = await StudentClassSession.findOne({
+        classSession: this.classSessionId,
+        student: socket.userId,
+      });
+
+      if (!studentInSession) {
+        const newStudentClassSession = new StudentClassSession({
+          student: socket.userId,
+          classSession: this.classSessionId,
+        });
+        newStudentClassSession.startTime.push(new Date());
+        await newStudentClassSession.save();
+        const classSession = await ClassSession.findById(this.classSessionId);
+        if (classSession) {
+          classSession.students.push(socket.userId);
+          await classSession.save();
+        }
+        callback({ success: true });
+      } else {
+        studentInSession.startTime.push(new Date());
+        await studentInSession.save();
+        callback({ success: true });
+      }
+    } catch (error) {
+      callback({ error: 'Error adding student to class session' });
+      console.log(error);
     }
   }
   async addTransport(isProducer, callback, socket, userId) {
@@ -69,6 +102,14 @@ export class ClassSes {
         await this.participants
           .get(socket.userId)
           .producerTransport.connect({ dtlsParameters });
+      }
+      if (socket.user.role === 'tutor') {
+        const classSession = await ClassSession.findById(this.classSessionId);
+        if (classSession && classSession.status === 'pending') {
+          classSession.status = 'ongoing';
+          classSession.startDate = new Date();
+          await classSession.save();
+        }
       }
     } catch (error) {
       console.log(error);
@@ -245,6 +286,23 @@ export class ClassSes {
       });
       this.participants.delete(socket.userId);
       this.informParticipantsOnParticipantLeave(socket);
+      this.addLeftSessionTime(socket);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async addLeftSessionTime(socket) {
+    try {
+      const studentInSession = await StudentClassSession.findOne({
+        classSession: this.classSessionId,
+        student: socket.userId,
+      });
+      if (studentInSession) {
+        studentInSession.endTime.push(new Date());
+        await studentInSession.save();
+      } else {
+        console.log('student not found');
+      }
     } catch (error) {
       console.log(error);
     }
@@ -266,7 +324,7 @@ export class ClassSes {
     }
   }
   shareScreen(socket) {
-    console.log(`share screen ${socket.userId}`)
+    console.log(`share screen ${socket.userId}`);
     try {
       this.participants.forEach((participant, key) => {
         if (key !== socket.userId) {
@@ -281,7 +339,7 @@ export class ClassSes {
     }
   }
   stopScreenShare(socket) {
-    console.log(`stop screen share ${socket.userId}`)
+    console.log(`stop screen share ${socket.userId}`);
     try {
       this.participants.forEach((participant, key) => {
         if (key !== socket.userId) {
@@ -294,5 +352,63 @@ export class ClassSes {
     } catch (error) {
       console.log(error);
     }
-   }
+  }
+  async verify(verify, socket) {
+    try {
+      const studentInSession = await StudentClassSession.findOne({
+        classSession: this.classSessionId,
+        student: socket.userId,
+      });
+      if (studentInSession) {
+        studentInSession.verify.push(verify);
+        await studentInSession.save();
+      } else {
+        console.log('student not found');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  record(state, socket) {
+    try {
+      if (state === 'start') {
+        this.isRecording = true;
+      } else if (state === 'stop') {
+        this.isRecording = false;
+      }
+      this.participants.forEach((participant, key) => {
+        if (key !== socket.userId) {
+          participant.socket.emit('recordCS', {
+            classSessionId: this.classSessionId,
+            state,
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async endClassSession(callback, socket) {
+    try {
+      this.participants.forEach((participant, key) => {
+        if (key !== socket.userId) {
+          participant.socket.emit('endCS', {
+            classSessionId: this.classSessionId,
+          });
+        }
+      });
+      this.router.close();
+      const classSession = await ClassSession.findById(this.classSessionId);
+      if (classSession) {
+        classSession.status = 'ended';
+        classSession.endDate = new Date();
+        await classSession.save();
+      }
+      callback({ success: true });
+    } catch (error) {
+      console.log(error);
+      callback({ success: false });
+    }
+  }
 }
