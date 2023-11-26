@@ -6,4 +6,6 @@ export { scheduleExamSession } from './exams/postScheduleExamSession.js';
 export { deleteExamSession } from './exams/deleteExamSession.js';
 export { postExamQuestion } from './exams/postExamQuestion.js';
 export { deleteExamQuestion } from './exams/deleteExamQuestion.js';
-export {postSaveExamSession} from './exams/postSaveExamSession.js';
+export { postSaveExamSession } from './exams/postSaveExamSession.js';
+export { getStudentClassSession } from './classrooms/getStudents.js';
+export { getStudentExamSession } from './exams/getStudent.js';

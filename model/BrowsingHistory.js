@@ -5,8 +5,9 @@ const BrowsingHistory = new Schema({
   title: {
     type: String,
   },
-  utc_time: {
+  time: {
     type: Date,
+    default: Date.now,
   },
   url: {
     type: String,

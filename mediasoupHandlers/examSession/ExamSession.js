@@ -98,7 +98,7 @@ export class ExamSes {
     }
   }
 
-  async informStudent(isProducer, studentId, callback, socket) {
+  async informStudent(isProducer, studentId, callback) {
     try {
       const transport = await createWebRtcTransport(this.router);
       if (isProducer) {
@@ -406,6 +406,11 @@ export class ExamSes {
     const studentId = socket.userId;
     try {
       if (this.students.has(studentId)) {
+        const studentInSession = await StudentExamSession.findById(
+          this.students.get(studentId).sessionId
+        );
+        studentInSession.endTime = Date.now();
+        await studentInSession.save();
         const student = this.students.get(studentId);
         student.socket
           .timeout(this.ackResponseTimeout)
@@ -527,6 +532,13 @@ export class ExamSes {
   /** */
   async reportViolation(violation, socket) {
     try {
+      if (this.tutor) {
+        this.tutor.socket.emit('ESviolation', {
+          examSessionId: this.examSessionId,
+          user: socket.user,
+          violation,
+        });
+      }
       if (this.students.has(socket.userId)) {
         const student = this.students.get(socket.userId);
         const studentInSession = await StudentExamSession.findById(
@@ -534,13 +546,6 @@ export class ExamSes {
         );
         studentInSession.violations.push(violation);
         await studentInSession.save();
-        if (this.tutor) {
-          this.tutor.socket.emit('ESviolation', {
-            examSessionId: this.examSessionId,
-            user: socket.user,
-            violation,
-          });
-        }
       }
     } catch (error) {
       console.log(error);
@@ -550,6 +555,15 @@ export class ExamSes {
   /** */
   async updateBrowsingHistory(bHistory, socket) {
     try {
+      if (this.tutor) {
+        bHistory.forEach((history) => {
+          this.tutor.socket.emit('BH', {
+            examSessionId: this.examSessionId,
+            user: socket.user,
+            history,
+          });
+        });
+      }
       if (this.students.has(socket.userId)) {
         const student = this.students.get(socket.userId);
         const studentInSession = await StudentExamSession.findById(
@@ -557,13 +571,6 @@ export class ExamSes {
         );
         bHistory.forEach((history) => {
           studentInSession.browsingHistory.push(history);
-          if (this.tutor) {
-            this.tutor.socket.emit('BH', {
-              examSessionId: this.examSessionId,
-              user: socket.user,
-              history,
-            });
-          }
         });
         await studentInSession.save();
       }

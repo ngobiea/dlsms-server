@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import Violation from './Violation.js';
+import ExamQuestion from './ExamQuestion.js';
 import BrowsingHistory from './BrowsingHistory.js';
 import File from './File.js';
 const StudentExamSession = new Schema({
@@ -29,6 +30,7 @@ const StudentExamSession = new Schema({
   comment: {
     type: String,
   },
+  answers: [ExamQuestion],
 });
 
 export default model('StudentExamSession', StudentExamSession);

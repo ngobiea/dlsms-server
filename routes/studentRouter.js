@@ -9,7 +9,8 @@ import {
 import {
   verifyClassroomCode,
   postJoinClassroom,
-  getExamSessionStatus,
+  getQuestions,
+  postSubmitExamQuestion,
 } from '../controllers/student/studentController.js';
 
 const studentRouter = express.Router();
@@ -79,5 +80,18 @@ studentRouter.post(
 studentRouter.get('/classroom', auth, getClassrooms);
 studentRouter.get('/classroom/:classroomId', auth, getClassroom);
 
+studentRouter.get('/exam-session/questions/:examSessionId', auth, getQuestions);
+studentRouter.post(
+  '/exam-session/submit',
+  auth,
+  [
+    body('examSessionId')
+      .trim()
+      .notEmpty()
+      .withMessage('Exam Session ID is required'),
+    body('answers').isArray().withMessage('Answer is required'),
+  ],
+  postSubmitExamQuestion
+);
 
 export default studentRouter;

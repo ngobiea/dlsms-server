@@ -41,7 +41,6 @@ app.use((error, _req, res, _next) => {
   res.status(status).json({ message, data, type });
 });
 
-console.log(process.env)
 const createNewWorker = async () => {
   const newWorker = await createWorker({
     logLevel: 'debug',
@@ -80,7 +79,7 @@ const createNewWorker = async () => {
 })();
 
 mongoose
-  .connect(process.env.MONGO_URI_LOCAL)
+  .connect(process.env.MONGO_URI_LOCAL, { dbName: process.env.DB_NAME })
   .then(async () => {
     httpServer.listen(process.env.PORT, () => {
       console.log(`App is listening on port ${process.env.PORT}`);

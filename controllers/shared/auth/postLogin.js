@@ -16,6 +16,7 @@ export const login = async (req, res, next) => {
     const { email, password, accountType } = req.body;
 
     const user = await User.findOne({ email });
+
     if (!user) {
       const error = new Error(
         'Email not found click Create Account to register'

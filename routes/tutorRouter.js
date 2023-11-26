@@ -12,6 +12,8 @@ import {
   deleteExamQuestion,
   postExamQuestion,
   postSaveExamSession,
+  getStudentClassSession,
+  getStudentExamSession,
 } from '../controllers/tutor/tutorController.js';
 
 const tutorRouter = Router();
@@ -97,7 +99,6 @@ tutorRouter.post(
   ],
   scheduleExamSession
 );
-
 tutorRouter.post(
   '/exam-session/question/:examSessionId',
   auth,
@@ -118,7 +119,6 @@ tutorRouter.post(
   ],
   postExamQuestion
 );
-
 tutorRouter.delete('/exam-session/:examSessionId', auth, deleteExamSession);
 tutorRouter.delete(
   '/exam-session/question/:examSessionId',
@@ -133,5 +133,17 @@ tutorRouter.patch(
 );
 tutorRouter.get('/classroom', auth, getClassrooms);
 tutorRouter.get('/classroom/:classroomId', auth, getClassroom);
+tutorRouter.get(
+  '/exam-session/students/:examSessionId',
+  auth,
+  [param('examSessionId').notEmpty()],
+  getStudentExamSession
+);
+tutorRouter.get(
+  '/class-session/students/:classSessionId',
+  auth,
+  [param('classSessionId').notEmpty()],
+  getStudentClassSession
+);
 
 export default tutorRouter;
