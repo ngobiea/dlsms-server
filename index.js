@@ -59,8 +59,8 @@ const createNewWorker = async () => {
       'sctp',
       'message',
     ],
-    rtcMinPort: parseInt(process.env.MEDIASOUP_MIN_PORT),
-    rtcMaxPort: parseInt(process.env.MEDIASOUP_MAX_PORT),
+    rtcMinPort: parseInt(process.env.MEDIASOUP_MIN_PORT, 10),
+    rtcMaxPort: parseInt(process.env.MEDIASOUP_MAX_PORT, 10),
   });
 
   newWorker.on('died', (error) => {
