@@ -1,40 +1,36 @@
 const createWebRtcTransport = async (router) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // https://mediasoup.org/documentation/v3/mediasoup/api/#WebRtcTransportOptions
-      const webRtcTransportOptions = {
-        listenIps: [
-          {
-            // replace with relevant IP address
-            ip: process.env.MEDIASOUP_IP,
-            announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
-          },
-        ],
-        enableUdp: true,
-        enableTcp: true,
-        preferUdp: true,
-      };
+  try {
+    const webRtcTransportOptions = {
+      listenIps: [
+        {
+          ip: process.env.MEDIASOUP_IP,
+          announcedIp: process.env.MEDIASOUP_ANNOUNCED_IP,
+        },
+      ],
+      enableUdp: true,
+      enableTcp: true,
+      preferUdp: true,
+    };
 
-      // https://mediasoup.org/documentation/v3/mediasoup/api/#router-createWebRtcTransport
-      const transport = await router.createWebRtcTransport(
-        webRtcTransportOptions
-      );
+    const transport = await router.createWebRtcTransport(
+      webRtcTransportOptions
+    );
 
-      transport.on('dtlsstatechange', (dtlsState) => {
-        if (dtlsState === 'closed') {
-          transport.close();
-        }
-      });
+    transport.on('dtlsstatechange', (dtlsState) => {
+      if (dtlsState === 'closed') {
+        transport.close();
+      }
+    });
 
-      transport.on('close', () => {
-        console.log('transport closed');
-      });
-      resolve(transport);
-    } catch (error) {
-      console.log(error);
-      reject(error);
-    }
-  });
+    transport.on('close', () => {
+      console.log('Transport closed');
+    });
+
+    return transport;
+  } catch (error) {
+    console.error('Error creating WebRTC transport:', error);
+    throw error;
+  }
 };
 
 const mediaCodecs = [
