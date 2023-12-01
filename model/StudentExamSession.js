@@ -24,7 +24,7 @@ const StudentExamSession = new Schema({
   violations: [Violation],
   browsingHistory: [BrowsingHistory],
   examSessionRecording: File,
-  marks: {
+  points: {
     type: Number,
   },
   comment: {

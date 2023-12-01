@@ -8,7 +8,7 @@ export const postSubmitExamQuestion = async (req, res, next) => {
   handleValidationErrors(req, res, async () => {
     try {
       const { examSessionId, answers } = req.body;
-      let marks = 0;
+      let points = 0;
       const studentExamSession = await StudentExamSession.findOne({
         examSession: examSessionId,
         student: userId,
@@ -24,11 +24,11 @@ export const postSubmitExamQuestion = async (req, res, next) => {
           (question) => question._id.toString() === answer._id.toString()
         );
         if (examQuestion.correctOption === answer.correctOption) {
-          marks += examQuestion.points;
+          points += examQuestion.points;
         }
         studentExamSession.answers.push(answer);
       });
-      studentExamSession.marks = marks;
+      studentExamSession.points = points;
       await studentExamSession.save();
       res.status(statusCode.OK).json({ message: 'success' });
     } catch (error) {

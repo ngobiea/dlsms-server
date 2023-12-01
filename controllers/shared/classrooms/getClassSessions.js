@@ -6,14 +6,14 @@ export const getClassSessions = async (req, res) => {
     const { classroomId } = req.params;
     const classSession = await ClassSession.find(
       { classroomId },
-      'title startDate endDate _id'
+      'title startDate endDate _id students'
     );
+
     res.status(statusCode.OK).json(classSession);
   } catch (error) {
     console.log(error);
     res.status(statusCode.INTERNAL_SERVER_ERROR).json({
       message: 'Internal Server Error',
     });
-
   }
 };

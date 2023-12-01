@@ -17,7 +17,7 @@ export class ExamStore {
           student: socket.userId,
           examSession: examSessionId,
         },
-        '-violations -browsingHistory -examSessionRecording -marks -comment -startTime -endTime -__v'
+        '-violations -browsingHistory -examSessionRecording -points -comment -startTime -endTime -__v'
       ).populate('examSession', 'status');
 
       if (!studentExamSession) {

@@ -14,6 +14,10 @@ import {
   postSaveExamSession,
   getStudentClassSession,
   getStudentExamSession,
+  getStudentRecording,
+  getSESReport,
+  getESReport,
+  getCSReport,
 } from '../controllers/tutor/tutorController.js';
 
 const tutorRouter = Router();
@@ -144,6 +148,31 @@ tutorRouter.get(
   auth,
   [param('classSessionId').notEmpty()],
   getStudentClassSession
+);
+
+tutorRouter.get(
+  '/exam-session/recording/:studentExamSessionId',
+  auth,
+  [param('studentExamSessionId').notEmpty()],
+  getStudentRecording
+);
+tutorRouter.get(
+  '/exam-session/report/:studentExamSessionId',
+  auth,
+  [param('studentExamSessionId').notEmpty()],
+  getSESReport
+);
+tutorRouter.get(
+  '/exam-session/reports/:examSessionId',
+  auth,
+  [param('examSessionId').notEmpty()],
+  getESReport
+);
+tutorRouter.get(
+  '/class-session/reports/:classSessionId',
+  auth,
+  [param('classSessionId').notEmpty()],
+  getCSReport
 );
 
 export default tutorRouter;

@@ -38,6 +38,9 @@ const ExamSession = new Schema({
       ref: 'StudentExamSession',
     },
   ],
+  totalPoint: {
+    type: Number,
+  },
   examQuestions: [ExamQuestion],
 });
 

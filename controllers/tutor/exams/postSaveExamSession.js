@@ -9,12 +9,18 @@ export const postSaveExamSession = async (req, res, next) => {
   const { examSessionId } = req.body;
 
   try {
+    let totalPoints = 0;
     const examSession = await ExamSession.findById(examSessionId);
     if (!examSession) {
       const error = new Error('Exam session not found');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
+    examSession.examQuestions.forEach((question) => {
+      totalPoints += question.points;
+    });
+    examSession.totalPoint = totalPoints;
+    await examSession.save();
     const classroom = await Classroom.findById(
       examSession.classroomId
     ).populate('tutor', '-password -verified -email -institution -_id');

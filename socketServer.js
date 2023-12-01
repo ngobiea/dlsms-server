@@ -141,7 +141,6 @@ const registerSocketServer = (server, worker) => {
     socket.on('recording', ({ classSessionId, state }) => {
       classSessions.record({ classSessionId, state }, socket);
     });
-
     socket.on('verify', ({ classSessionId, verify }) => {
       classSessions.verify({ classSessionId, verify }, socket);
     });

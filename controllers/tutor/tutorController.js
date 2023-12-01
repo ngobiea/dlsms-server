@@ -9,3 +9,7 @@ export { deleteExamQuestion } from './exams/deleteExamQuestion.js';
 export { postSaveExamSession } from './exams/postSaveExamSession.js';
 export { getStudentClassSession } from './classrooms/getStudents.js';
 export { getStudentExamSession } from './exams/getStudent.js';
+export { getStudentRecording } from './exams/getStudentRecording.js';
+export { getSESReport } from './exams/getStudentReport.js';
+export { getESReport } from './exams/getReport.js';
+export {getCSReport} from './classrooms/getCSReport.js';

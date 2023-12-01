@@ -9,6 +9,7 @@ import {
   HeadObjectCommand,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
@@ -190,6 +191,14 @@ export class AWS {
           MultipartUpload: { Parts: parts },
         })
       );
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+  static async downloadFile(bucket, key) {
+    try {
+      return await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
     } catch (error) {
       console.log(error);
       return null;

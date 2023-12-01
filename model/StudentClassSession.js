@@ -23,6 +23,10 @@ const StudentClassSession = new Schema({
     },
   ],
   verify: [Verify],
+  attendance: {
+    type: String,
+    default: '0',
+  },
 });
 
 export default model('StudentClassSession', StudentClassSession);

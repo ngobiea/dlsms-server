@@ -10,7 +10,7 @@ export class ClassStore {
   setIO(io) {
     this.io = io;
   }
- async getClassStatus({ classSessionId }, callback) {
+  async getClassStatus({ classSessionId }, callback) {
     try {
       const classSession = await ClassSession.findById(classSessionId);
       if (classSession) {
@@ -182,30 +182,6 @@ export class ClassStore {
       console.log(error);
     }
   }
-  leaveClassSession({ classSessionId }, socket) {
-    try {
-      if (this.classSessions.has(classSessionId)) {
-        this.classSessions.get(classSessionId).removeParticipant(socket);
-      } else {
-        console.log('classSession not found LCS');
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  disconnectSocket(socket) {
-    try {
-      this.classSessions.forEach((classSession) => {
-        classSession.removeParticipant(socket);
-        if (classSession.participants.size === 0) {
-          classSession.router.close();
-          this.classSessions.delete(classSession.classSessionId);
-        }
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
   shareScreen({ classSessionId }, socket) {
     try {
       if (this.classSessions.has(classSessionId)) {
@@ -259,6 +235,30 @@ export class ClassStore {
       } else {
         console.log('classSession not found ECS');
       }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  leaveClassSession({ classSessionId }, socket) {
+    try {
+      if (this.classSessions.has(classSessionId)) {
+        this.classSessions.get(classSessionId).removeParticipant(socket);
+      } else {
+        console.log('classSession not found LCS');
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  disconnectSocket(socket) {
+    try {
+      this.classSessions.forEach((classSession) => {
+        classSession.removeParticipant(socket);
+        if (classSession.participants.size === 0) {
+          classSession.router.close();
+          this.classSessions.delete(classSession.classSessionId);
+        }
+      });
     } catch (error) {
       console.log(error);
     }

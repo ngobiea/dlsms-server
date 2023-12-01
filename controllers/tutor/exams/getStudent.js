@@ -6,11 +6,14 @@ export const getStudentExamSession = async (req, res) => {
     const { examSessionId } = req.params;
     const studentExamSession = await StudentExamSession.find(
       { examSession: examSessionId },
-      'student startTime endTime violations browsingHistory _id'
-    ).populate({
-      path: 'student',
-      select: 'firstName lastName studentId',
-    });
+      'student startTime endTime violations browsingHistory _id points answers'
+    )
+      .populate({
+        path: 'student',
+        select: 'firstName lastName studentId',
+      })
+      .populate('examSession', 'totalPoint');
+
     const students = studentExamSession.map((student) => {
       return {
         firstName: student.student.firstName,
@@ -20,6 +23,8 @@ export const getStudentExamSession = async (req, res) => {
         startTime: student.startTime,
         endTime: student.endTime,
         _id: student._id,
+        totalPoint: student.examSession.totalPoint,
+        points: student.points,
       };
     });
     res.status(statusCode.OK).json(students);

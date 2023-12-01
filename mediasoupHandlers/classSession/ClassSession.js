@@ -76,6 +76,14 @@ export class ClassSes {
         console.log(socket.userId);
         this.participants.get(socket.userId).setProducerTransport(transport);
         this.informParticipants(socket);
+        const classSession = await ClassSession.findById(this.classSessionId);
+        if (
+          socket.user.role === 'tutor' &&
+          classSession?.status === 'pending'
+        ) {
+          classSession.status = 'ongoing';
+          await classSession.save();
+        }
       } else {
         this.participants
           .get(socket.userId)
@@ -103,17 +111,26 @@ export class ClassSes {
           .get(socket.userId)
           .producerTransport.connect({ dtlsParameters });
       }
-      if (socket.user.role === 'tutor') {
-        const classSession = await ClassSession.findById(this.classSessionId);
-        if (classSession && classSession.status === 'pending') {
-          classSession.status = 'ongoing';
-          classSession.startDate = new Date();
-          await classSession.save();
-        }
+      const classSession = await ClassSession.findById(this.classSessionId);
+
+      if (socket.user.role === 'tutor' && classSession?.status === 'ongoing') {
+        classSession.status = 'started';
+        classSession.startDate = new Date();
+        await classSession.save();
+        this.informSessionStarted(socket);
       }
     } catch (error) {
       console.log(error);
     }
+  }
+  async informSessionStarted(socket) {
+    this.participants.forEach((participant, key) => {
+      if (key !== socket.userId) {
+        participant.socket.emit('CSStarted', {
+          classSessionId: this.classSessionId,
+        });
+      }
+    });
   }
   async connectConsumerTransport(dtlsParameters, userId, socket) {
     try {
