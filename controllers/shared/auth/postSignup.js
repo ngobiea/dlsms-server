@@ -1,14 +1,21 @@
 import { validationResult } from 'express-validator';
 
+import { sendEmail } from '../../../util/aws/ses.js';
+import { signUpEmail } from '../../../util/emailMessages.js';
 import bcrypt from 'bcryptjs';
 
 import jsonwebtoken from 'jsonwebtoken';
-import { sendEmail } from '../../../util/aws/ses.js';
-import { signUpEmail } from '../../../util/emailMessages.js';
 import User from '../../../model/User.js';
 import { statusCode } from '../../../util/statusCodes.js';
+
+const handleError = (error, next) => {
+  if (!error.statusCode) {
+    error.statusCode = statusCode.INTERNAL_SERVER_ERROR;
+  }
+  next(error);
+};
+
 export const signup = async (req, res, next) => {
-  let newUser;
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -17,8 +24,10 @@ export const signup = async (req, res, next) => {
       error.data = errors.array();
       throw error;
     }
+
     const { firstName, lastName, institution, accountType, email, password } =
       req.body;
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       const error = new Error(
@@ -28,11 +37,12 @@ export const signup = async (req, res, next) => {
       error.type = 'email';
       throw error;
     }
+
     const hashedPassword = await bcrypt.hash(
       password,
-      parseFloat(process.env.SALT)
+      parseInt(process.env.SALT, 10)
     );
-    newUser = new User({
+    const newUser = new User({
       firstName,
       lastName,
       institution,
@@ -42,7 +52,10 @@ export const signup = async (req, res, next) => {
       role: accountType,
       studentId: accountType === 'student' ? req.body.studentId : ' ',
     });
+
+    // Attempt to save the new user
     await newUser.save();
+
     const token = jsonwebtoken.sign(
       { userId: newUser._id.toString() },
       process.env.JWT_SECRET,
@@ -56,24 +69,21 @@ export const signup = async (req, res, next) => {
     )}/verify-email/${token}`;
 
     try {
-      sendEmail(
+      // Attempt to send the email
+      await sendEmail(
         email,
         'Verify Your Email to Join Us!',
         signUpEmail(firstName, verificationLink)
       );
+      res
+        .status(statusCode.CREATED)
+        .json({ message: `New ${accountType} created`, email });
     } catch (error) {
-      const err = new Error('Failed to send verification email');
-      err.statusCode = 500;
-      throw err;
+      // If sending email fails, delete the user
+      await User.deleteOne({ _id: newUser._id }); // Delete the user from the database
+      throw new Error('Failed to send verification email');
     }
-
-    res
-      .status(statusCode.CREATED)
-      .json({ message: `New ${accountType} created`, email });
-  } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = statusCode.INTERNAL_SERVER_ERROR;
-    }
-    next(err);
+  } catch (error) {
+    handleError(error, next);
   }
 };
