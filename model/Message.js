@@ -29,10 +29,11 @@ const Message = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'ExamSession',
   },
-  poll: {
+  assignment: {
     type: Schema.Types.ObjectId,
-    ref: 'Poll',
+    ref: 'Assignment',
   },
+
 });
 
 export default model('Message', Message);

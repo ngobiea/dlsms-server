@@ -1,5 +1,5 @@
 import express from 'express';
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import {
   signup,
   login,
@@ -11,6 +11,9 @@ import {
   postJoinClassroom,
   getQuestions,
   postSubmitExamQuestion,
+  getAssignment,
+  postSubmitAssignment,
+  getSubmittedAssignments,
 } from '../controllers/student/studentController.js';
 
 const studentRouter = express.Router();
@@ -92,6 +95,37 @@ studentRouter.post(
     body('answers').isArray().withMessage('Answer is required'),
   ],
   postSubmitExamQuestion
+);
+
+studentRouter.get(
+  '/assignment/:assignmentId',
+  auth,
+  [param('assignmentId').notEmpty().withMessage('Error getting assignments')],
+  getAssignment
+);
+
+studentRouter.post(
+  '/assignment/submit/:assignmentId',
+  auth,
+  [
+    param('assignmentId')
+      .trim()
+      .notEmpty()
+      .withMessage('Assignment ID is required'),
+  ],
+  postSubmitAssignment
+);
+
+studentRouter.get(
+  '/assignment/submitted/:classroomId',
+  auth,
+  [
+    param('classroomId')
+      .trim()
+      .notEmpty()
+      .withMessage('Classroom ID is required'),
+  ],
+  getSubmittedAssignments
 );
 
 export default studentRouter;

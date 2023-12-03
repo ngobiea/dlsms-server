@@ -18,6 +18,8 @@ import {
   getSESReport,
   getESReport,
   getCSReport,
+  postAssignment,
+  getGradedAssignments,
 } from '../controllers/tutor/tutorController.js';
 
 const tutorRouter = Router();
@@ -173,6 +175,27 @@ tutorRouter.get(
   auth,
   [param('classSessionId').notEmpty()],
   getCSReport
+);
+tutorRouter.post(
+  '/assignment/:classroomId',
+  auth,
+  [
+    body('title').trim().notEmpty().withMessage('Assignment Title is required'),
+    body('dueDate').trim().notEmpty().withMessage('Due Date is required'),
+    body('points').trim().notEmpty().withMessage('Points is required'),
+    body('instruction')
+      .trim()
+      .notEmpty()
+      .withMessage('Instruction is required'),
+  ],
+  postAssignment
+);
+
+tutorRouter.get(
+  '/graded/assignment/:classroomId',
+  auth,
+  [param('classroomId').notEmpty().withMessage('Error getting assignments')],
+  getGradedAssignments
 );
 
 export default tutorRouter;

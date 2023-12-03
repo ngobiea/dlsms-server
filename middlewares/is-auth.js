@@ -1,6 +1,6 @@
 import jsonwebtoken from 'jsonwebtoken';
-
-export default (req, _res, next) => {
+import User from '../model/User.js';
+export default async (req, _res, next) => {
   const authHeader = req.get('Authorization');
   if (!authHeader) {
     const error = new Error('Not authenticated.');
@@ -20,8 +20,13 @@ export default (req, _res, next) => {
     error.statusCode = 401;
     throw error;
   }
-
   req.userId = decodedToken.userId.toString();
-  req.accountType = decodedToken.accountType;
+
+  const user = await User.findById(
+    decodedToken.userId.toString(),
+    '-verified -password -machineLearningImages -__v'
+  );
+
+  req.role = user.role;
   next();
 };

@@ -1,27 +1,27 @@
-import { Schema , model } from 'mongoose';
-import File from './File';
-
+import { Schema } from 'mongoose';
+import File from './File.js';
 
 const Submission = new Schema({
-  studentId: {
+  student: {
     type: Schema.Types.ObjectId,
     ref: 'User',
   },
-  assignmentId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Assignment',
-  },
   files: [File],
-  grade: {
+  point: {
     type: Number,
+  },
+  date: {
+    type: Date,
+    default: Date.now,
   },
   graded: {
     type: Boolean,
+    default: false,
   },
-  gradedBy: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+  comment: {
+    type: String,
+    default: '',
   },
 });
 
-export default model('Submission', Submission);
+export default Submission;

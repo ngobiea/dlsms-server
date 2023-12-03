@@ -5,3 +5,6 @@ export { postJoinClassroom } from './classrooms/postJoinClassroom.js';
 export { postJoin } from './classrooms/postJoin.js';
 export { getQuestions } from './exams/getQuestions.js';
 export { postSubmitExamQuestion } from './exams/postSubmitQuestion.js';
+export { getAssignment } from './assignments/getAssignment.js';
+export { postSubmitAssignment } from './assignments/postSubmitAssignment.js';
+export { getSubmittedAssignments } from './assignments/getSubmittedAssignments.js';

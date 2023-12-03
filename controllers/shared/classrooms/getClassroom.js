@@ -25,8 +25,8 @@ export const getClassroom = async (req, res, next) => {
       )
       .populate('classSession', '-tutor -classroomId -students -endDate')
       .populate('examSession', '-tutor -classroomId -students')
-      .populate('poll', '-tutor -classroomId -students')
-      .sort({ timestamp: -1 });
+      .populate('assignment', '');
+    // .sort({ timestamp: -1 });
 
     res.status(statusCode.OK).json({
       message: 'Classrooms fetched successfully',

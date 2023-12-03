@@ -12,12 +12,11 @@ export const handleGetClassroom = async (classroomId, callback) => {
   const messages = await Message.find({ classroomId }, '-classroomId -__v')
     .populate(
       'sender',
-      '-password -verified -email -institution -studentId -role'
+      '-password -verified -email -institution -studentId -role -machineLearningImages'
     )
     .populate('classSession', '-tutor -classroomId -students -endDate')
     .populate('examSession', '-tutor -classroomId -students')
-    .populate('poll', '-tutor -classroomId -students')
-    .sort({ timestamp: -1 });
+    .populate('assignment', '-submissions -files');
 
   callback({ students: classroom.students, messages });
 };
