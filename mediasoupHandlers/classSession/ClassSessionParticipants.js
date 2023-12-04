@@ -68,7 +68,7 @@ export class ClassSessionParticipants {
       });
       this.consumers.get(consumer.id).pause();
     });
-    
+
     this.consumers.get(consumer.id).on('producerresume', () => {
       console.log('associated producer resume so consumer resume');
       this.socket.emit('resumeCSConsumer', {

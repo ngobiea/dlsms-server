@@ -1,4 +1,3 @@
-
 import ExamSession from '../../../model/ExamSession.js';
 import StudentExamSession from '../../../model/StudentExamSession.js';
 import { statusCode } from '../../../util/statusCodes.js';
@@ -26,6 +25,7 @@ export const postSubmitExamQuestion = async (req, res, next) => {
         );
         if (examQuestion.correctOption === answer.correctOption) {
           points += examQuestion.points;
+          answer.isCorrect = true;
         }
         studentExamSession.answers.push(answer);
       });
@@ -40,4 +40,3 @@ export const postSubmitExamQuestion = async (req, res, next) => {
     }
   });
 };
-

@@ -45,6 +45,7 @@ const registerSocketServer = (server, worker) => {
     socket.on('studentImages', (callback) => {
       Student.getImages(callback, socket);
     });
+
     // Class Session Handlers
     socket.on('newSession', ({ classSessionId }, callback) => {
       console.log(classSessionId);
@@ -56,6 +57,7 @@ const registerSocketServer = (server, worker) => {
         io
       );
     });
+    // Exam Session Handlers
     socket.on('addStudentToClassSession', ({ classSessionId }, callback) => {
       classSessions.addStudentToDB({ classSessionId }, callback, socket);
     });

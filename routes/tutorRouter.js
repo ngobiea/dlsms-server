@@ -22,6 +22,8 @@ import {
   getGradedAssignments,
   postGradeAssignment,
   downloadSubmittedAssignment,
+  getStudentAnswers,
+  postGradeStudentExamSession,
 } from '../controllers/tutor/tutorController.js';
 const pointsMessage = 'Points is required';
 
@@ -109,6 +111,18 @@ tutorRouter.post(
   scheduleExamSession
 );
 tutorRouter.post(
+  '/exam-session/grade',
+  auth,
+  [
+    body('examSessionId')
+      .trim()
+      .notEmpty()
+      .withMessage('Student Id is required'),
+    body('points').notEmpty().withMessage(pointsMessage),
+  ],
+  postGradeStudentExamSession
+);
+tutorRouter.post(
   '/exam-session/question/:examSessionId',
   auth,
   [
@@ -172,6 +186,16 @@ tutorRouter.get(
   auth,
   [param('examSessionId').notEmpty()],
   getESReport
+);
+tutorRouter.get(
+  '/exam-session/answers/:studentExamSessionId',
+  auth,
+  [
+    param('studentExamSessionId')
+      .notEmpty()
+      .withMessage('Error getting student answers'),
+  ],
+  getStudentAnswers
 );
 tutorRouter.get(
   '/class-session/reports/:classSessionId',

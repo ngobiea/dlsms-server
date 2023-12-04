@@ -471,30 +471,22 @@ export class ExamSes {
   /** */
   removeTutor(socket) {
     try {
-      if (this.tutor2) {
+      if (this.tutor2 && this.tutor) {
         this.tutor2.producerTransport.close();
         this.tutor2.consumerTransports.forEach((transport, key) => {
           this.informStudentsOnTutorLeave(transport, key, socket);
         });
         this.tutor2 = null;
-      } else if (this.tutor) {
-        this.tutor.socket
-          .timeout(this.ackResponseTimeout)
-          .emit('ESOpen', (error) => {
-            if (error) {
-              this.tutor.consumerTransports.forEach((transport) => {
-                transport.close();
-              });
-            } else {
-              console.log('Exam Session open');
-            }
-          });
-        console.log('tutor not found in exam session');
+      } else if (this.tutor && !this.tutor2) {
+        this.tutor.consumerTransports.forEach((transport) => {
+          transport.close();
+        });
       }
     } catch (error) {
       console.log(error);
     }
   }
+  /** */
   informStudentsOnTutorLeave(transport, userId, socket) {
     try {
       transport.close();
@@ -506,12 +498,14 @@ export class ExamSes {
       console.log(error);
     }
   }
+  /** */
   endStudentSession(examSessionId, studentId) {
     const student = this.students.get(studentId);
     if (student) {
       student.socket.emit('endExamSession', { examSessionId, studentId });
     }
   }
+  /** */
 
   removeStudentConsumerTransport(studentId) {
     try {
@@ -528,7 +522,6 @@ export class ExamSes {
       console.log(error);
     }
   }
-
   /** */
   async reportViolation(violation, socket) {
     try {

@@ -2,7 +2,6 @@ import { Schema } from 'mongoose';
 
 import File from './File.js';
 
-
 const Option = new Schema({
   optionId: {
     type: String,
@@ -26,7 +25,10 @@ const ExamQuestion = new Schema({
   type: {
     type: String,
   },
-
+  isCorrect: {
+    type: Boolean,
+    default: false,
+  },
   files: [File],
 });
 

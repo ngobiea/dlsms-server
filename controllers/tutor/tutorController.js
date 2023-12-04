@@ -17,3 +17,5 @@ export { postAssignment } from './assignments/postAssignment.js';
 export { getGradedAssignments } from './assignments/getGradedAssignments.js';
 export { postGradeAssignment } from './assignments/postGradeAssignments.js';
 export { downloadSubmittedAssignment } from './assignments/downloadSubmittedAssignment.js';
+export { getStudentAnswers } from './exams/getStudentAnswers.js';
+export { postGradeStudentExamSession } from './exams/postGradeStudent.js';

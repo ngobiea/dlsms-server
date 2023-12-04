@@ -26,7 +26,6 @@ export const getESReport = async (req, res, next) => {
       { examSession: examSessionId },
       'student examSession startTime endTime violations browsingHistory -_id points comment'
     ).populate('student');
-    console.log(studentExamSessions);
     if (studentExamSessions?.length === 0) {
       const error = new Error('Student exam session not found');
       error.statusCode = statusCode.NOT_FOUND;

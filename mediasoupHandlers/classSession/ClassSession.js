@@ -386,7 +386,6 @@ export class ClassSes {
       console.log(error);
     }
   }
-
   record(state, socket) {
     try {
       if (state === 'start') {

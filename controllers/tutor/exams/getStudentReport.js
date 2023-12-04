@@ -133,7 +133,7 @@ const generateExcelReport = (data, res) => {
 
   // Row 6: Titles based on object keys for Violations and Browsing History
   const violationKeys = ['Title', 'Description', 'Time', 'Type'];
-  const browsingKeys = ['Browser', 'Time', 'Title', 'URL'];
+  const browsingKeys = ['Browser', 'Title', 'Time', 'URL'];
 
   violationKeys.forEach((key, index) => {
     ws.cell(six, index + one)

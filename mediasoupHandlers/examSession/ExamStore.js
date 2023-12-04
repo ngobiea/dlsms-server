@@ -2,14 +2,17 @@ import { mediaCodecs } from '../../mediasoupServer.js';
 import { ExamSes } from './ExamSession.js';
 import ExamSession from '../../model/ExamSession.js';
 import StudentExamSession from '../../model/StudentExamSession.js';
+
 export class ExamStore {
   constructor() {
     this.io = null;
     this.examSessions = new Map();
   }
+
   setIO(io) {
     this.io = io;
   }
+
   async getExamStatus({ examSessionId }, callback, socket) {
     try {
       const studentExamSession = await StudentExamSession.findOne(
@@ -76,6 +79,7 @@ export class ExamStore {
       console.log(error);
     }
   }
+
   connectProducerTransport({ dtlsParameters, examSessionId }, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
@@ -186,6 +190,7 @@ export class ExamStore {
       console.log(error);
     }
   }
+
   resumeProducer({ examSessionId, producerId }, callback, socket) {
     try {
       if (this.examSessions.has(examSessionId)) {
@@ -273,6 +278,7 @@ export class ExamStore {
       console.log(error);
     }
   }
+
   createTutorTransport(
     { examSessionId, isProducer, studentId },
     callback,
@@ -300,6 +306,7 @@ export class ExamStore {
       console.log(error);
     }
   }
+
   createOneToOneTransport(
     { examSessionId, isProducer, userId },
     callback,
@@ -315,6 +322,7 @@ export class ExamStore {
       console.log(error);
     }
   }
+
   connectOneToOneProducerTransport({ examSessionId, dtlsParameters }) {
     try {
       if (this.examSessions.has(examSessionId)) {
@@ -324,6 +332,7 @@ export class ExamStore {
       console.log(error);
     }
   }
+
   oneToOneProducerOnProduce(
     { examSessionId, kind, rtpParameters, appData, userId },
     callback,
@@ -391,4 +400,3 @@ export class ExamStore {
     }
   }
 }
-
