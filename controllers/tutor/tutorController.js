@@ -15,3 +15,5 @@ export { getESReport } from './exams/getReport.js';
 export { getCSReport } from './classrooms/getCSReport.js';
 export { postAssignment } from './assignments/postAssignment.js';
 export { getGradedAssignments } from './assignments/getGradedAssignments.js';
+export { postGradeAssignment } from './assignments/postGradeAssignments.js';
+export { downloadSubmittedAssignment } from './assignments/downloadSubmittedAssignment.js';

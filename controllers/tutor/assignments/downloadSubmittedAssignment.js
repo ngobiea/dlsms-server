@@ -1,9 +1,8 @@
-import StudentExamSession from '../../../model/StudentExamSession.js';
+import Assignment from '../../../model/Assignment.js';
 import { statusCode } from '../../../util/statusCodes.js';
-import { AWS } from '../../../util/aws/AWS.js';
 import { validationResult } from 'express-validator';
-import { extractAfterSecondSlash } from '../../../util/fileTitle.js';
-export const getStudentRecording = async (req, res, next) => {
+import { AWS } from '../../../util/aws/AWS.js';
+export const downloadSubmittedAssignment = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -12,29 +11,32 @@ export const getStudentRecording = async (req, res, next) => {
       error.data = errors.array();
       throw error;
     }
-    const { studentExamSessionId } = req.params;
-    console.log(req.params);
-    const studentExamSession = await StudentExamSession.findById(
-      studentExamSessionId
-    );
-    if (!studentExamSession) {
-      const error = new Error('Student exam session not found');
+    const { assignmentId, submissionId } = req.params;
+    const foundAssignment = await Assignment.findById(assignmentId);
+    if (!foundAssignment) {
+      const error = new Error('Assignment not found');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const { examSessionRecording } = studentExamSession;
-    if (!examSessionRecording) {
-      const error = new Error('Student exam session recording not found');
+    const foundSubmission = foundAssignment.submissions.find((submission) => {
+      return submission._id.toString() === submissionId.toString();
+    });
+    if (!foundSubmission) {
+      const error = new Error('Submission not found');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const { bucketName, key } = examSessionRecording;
+    if (!foundSubmission.files.length) {
+      const error = new Error('No files found');
+      error.statusCode = statusCode.NOT_FOUND;
+      throw error;
+    }
+    const { bucketName, key } = foundSubmission?.files[0];
     const data = await AWS.downloadFile(bucketName, key);
-    console.log(extractAfterSecondSlash(key));
     res.set({
       'Content-Type': data.ContentType,
       'Content-Length': data.ContentLength,
-      'Content-Disposition': extractAfterSecondSlash(key),
+      'Content-Disposition': foundSubmission.files[0].name,
     });
     data.Body.once('error', (error) => {
       console.log(error);

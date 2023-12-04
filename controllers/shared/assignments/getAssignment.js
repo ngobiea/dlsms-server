@@ -19,7 +19,6 @@ export const getAssignment = async (req, res, next) => {
         select: 'firstName lastName studentId',
       },
     });
-    // console.log(foundAssignment)
     if (!foundAssignment) {
       const error = new Error('Assignment not found');
       error.statusCode = statusCode.NOT_FOUND;
@@ -40,7 +39,6 @@ export const getAssignment = async (req, res, next) => {
           return submission.student._id.toString() === req.userId.toString();
         }),
       };
-      console.log(assignment);
       res.status(statusCode.OK).json(assignment);
     }
   } catch (error) {

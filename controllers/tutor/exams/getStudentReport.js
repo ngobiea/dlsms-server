@@ -82,7 +82,7 @@ const generateExcelReport = (data, res) => {
   const ws = wb.addWorksheet(`${data.student.studentId} Report`);
   // Row 1: Merge cells for the first row spanning 8 columns
 
-  ws.cell(1, 1, 1, 8, true)
+  ws.cell(one, one, one, 8, true)
     .string(
       `${data.student.firstName} ${data.student.lastName} exam session for ${data.examSession.title}`
     )
@@ -102,7 +102,7 @@ const generateExcelReport = (data, res) => {
   ];
   // Row 2: Title headers for each column
   headers.forEach((header, index) => {
-    ws.cell(2, index + 1)
+    ws.cell(two, index + one)
       .string(header)
       .style({ font: { bold: true } });
   });
@@ -118,13 +118,13 @@ const generateExcelReport = (data, res) => {
     data.comment,
   ];
   rowData.forEach((value, index) => {
-    ws.cell(three, index + 1).string(value);
+    ws.cell(three, index + one).string(value);
   });
   // Row 5: Titles for Violations and Browsing History
-  ws.cell(five, 1, five, 4, true)
+  ws.cell(five, one, five, four, true)
     .string('Violations')
     .style({ font: { bold: true }, alignment: { horizontal: 'center' } });
-  ws.cell(five, five, five, 8, true)
+  ws.cell(five, five, five, eight, true)
     .string('Browsing History')
     .style({
       font: { bold: true },
@@ -136,13 +136,13 @@ const generateExcelReport = (data, res) => {
   const browsingKeys = ['Browser', 'Time', 'Title', 'URL'];
 
   violationKeys.forEach((key, index) => {
-    ws.cell(six, index + 1)
+    ws.cell(six, index + one)
       .string(key)
       .style({ font: { bold: true } });
   });
 
   browsingKeys.forEach((key, index) => {
-    ws.cell(six, violationKeys.length + index + 1)
+    ws.cell(six, violationKeys.length + index + one)
       .string(key)
       .style({
         font: { bold: true },
@@ -150,10 +150,10 @@ const generateExcelReport = (data, res) => {
   });
 
   // Row 7 and beyond: Data for Violations and Browsing History
-  let rowIndex = 7;
+  let rowIndex = seven;
   data.violations.forEach((violation) => {
     Object.keys(violation).forEach((key, index) => {
-      ws.cell(rowIndex, index + 1).string(String(violation[key]));
+      ws.cell(rowIndex, index + one).string(String(violation[key]));
     });
     rowIndex++;
   });
@@ -162,7 +162,7 @@ const generateExcelReport = (data, res) => {
 
   data.browsingHistory.forEach((history) => {
     Object.keys(history).forEach((key, index) => {
-      ws.cell(rowIndex, violationKeys.length + index + 1).string(
+      ws.cell(rowIndex, violationKeys.length + index + one).string(
         String(history[key])
       );
     });

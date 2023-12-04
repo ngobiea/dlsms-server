@@ -12,12 +12,14 @@ const Assignment = new Schema({
   },
   instruction: {
     type: String,
+    default: '',
   },
   dueDate: {
     type: Date,
   },
   points: {
-    type: Number,
+    type: String,
+    default: '',
   },
   files: [File],
   status: {

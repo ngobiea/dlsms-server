@@ -1,4 +1,3 @@
-
 import { Schema, model } from 'mongoose';
 import Violation from './Violation.js';
 import ExamQuestion from './ExamQuestion.js';
@@ -27,13 +26,13 @@ const StudentExamSession = new Schema({
   examSessionRecording: File,
   points: {
     type: Number,
+    default: 0,
   },
   comment: {
     type: String,
+    default: '',
   },
   answers: [ExamQuestion],
 });
 
 export default model('StudentExamSession', StudentExamSession);
-
-

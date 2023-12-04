@@ -20,7 +20,10 @@ import {
   getCSReport,
   postAssignment,
   getGradedAssignments,
+  postGradeAssignment,
+  downloadSubmittedAssignment,
 } from '../controllers/tutor/tutorController.js';
+const pointsMessage = 'Points is required';
 
 const tutorRouter = Router();
 
@@ -177,12 +180,22 @@ tutorRouter.get(
   getCSReport
 );
 tutorRouter.post(
+  '/assignment/grade',
+  auth,
+  [
+    body('submissionId').notEmpty().withMessage('Student Id is required'),
+    body('points').notEmpty().withMessage(pointsMessage),
+    body('assignmentId').notEmpty().withMessage('Error grading assignment'),
+  ],
+  postGradeAssignment
+);
+tutorRouter.post(
   '/assignment/:classroomId',
   auth,
   [
     body('title').trim().notEmpty().withMessage('Assignment Title is required'),
     body('dueDate').trim().notEmpty().withMessage('Due Date is required'),
-    body('points').trim().notEmpty().withMessage('Points is required'),
+    body('points').trim().notEmpty().withMessage(pointsMessage),
     body('instruction')
       .trim()
       .notEmpty()
@@ -196,6 +209,21 @@ tutorRouter.get(
   auth,
   [param('classroomId').notEmpty().withMessage('Error getting assignments')],
   getGradedAssignments
+);
+tutorRouter.get(
+  '/download/:assignmentId/submission/:submissionId',
+  auth,
+  [
+    param('assignmentId')
+      .trim()
+      .notEmpty()
+      .withMessage('Classroom ID is required'),
+    param('submissionId')
+      .trim()
+      .notEmpty()
+      .withMessage('Submission ID is required'),
+  ],
+  downloadSubmittedAssignment
 );
 
 export default tutorRouter;

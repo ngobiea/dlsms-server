@@ -10,7 +10,8 @@ import {
   getClassSessions,
   getExamSessions,
   getAssignedAssignments,
-  getAssignment
+  getAssignment,
+  downloadAssignmentFile,
 } from '../controllers/shared/shareController.js';
 
 shareRouter.get('/verify-email/:token', verifyEmail);
@@ -19,11 +20,22 @@ shareRouter.post('/logout', logout);
 shareRouter.get('/report', getReport);
 shareRouter.get('/class-sessions/:classroomId', auth, getClassSessions);
 shareRouter.get('/exam-sessions/:classroomId', auth, getExamSessions);
+
 shareRouter.get(
   '/assigned/assignment/:classroomId',
   auth,
   [param('classroomId').notEmpty().withMessage('Error getting assignments')],
   getAssignedAssignments
+);
+
+shareRouter.get(
+  '/download/:assignmentId/file/:fileId',
+  auth,
+  [
+    param('assignmentId').notEmpty().withMessage('Error getting assignments'),
+    param('fileId').notEmpty().withMessage('Error getting assignments'),
+  ],
+  downloadAssignmentFile
 );
 
 shareRouter.get(

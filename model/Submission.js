@@ -7,8 +7,9 @@ const Submission = new Schema({
     ref: 'User',
   },
   files: [File],
-  point: {
-    type: Number,
+  points: {
+    type: String,
+    default: '',
   },
   date: {
     type: Date,
