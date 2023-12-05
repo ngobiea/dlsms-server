@@ -254,7 +254,6 @@ const registerSocketServer = (server, worker) => {
     socket.on('bHistory', ({ examSessionId, history }) => {
       examSessions.updateBrowsingHistory({ examSessionId, history }, socket);
     });
-
     //
     socket.on('ESR-Chunk', ({ examSessionId, index, chunk }) => {
       examSessions.uploadChunk({ examSessionId, index, chunk }, socket);
