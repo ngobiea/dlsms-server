@@ -193,6 +193,7 @@ const registerSocketServer = (server, worker) => {
         );
       }
     );
+  
     // ESOnCTConnect event handler
     socket.on('ESOnCTConnect', ({ examSessionId, dtlsParameters, userId }) => {
       examSessions.connectConsumerTransport(
