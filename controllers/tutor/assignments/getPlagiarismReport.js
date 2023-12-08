@@ -1,8 +1,9 @@
 import Assignment from '../../../model/Assignment.js';
 import { statusCode } from '../../../util/statusCodes.js';
 import { validationResult } from 'express-validator';
-import { AWS } from '../../../util/aws/AWS.js';
-export const downloadSubmittedAssignment = async (req, res, next) => {
+import { CopyLeaksPlagiarismChecker } from '../../../copyleaks/plagiarism.js';
+
+export const getPlagiarismReport = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -31,26 +32,20 @@ export const downloadSubmittedAssignment = async (req, res, next) => {
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const { bucketName, key } = foundSubmission?.files[0] ?? {};
-    if (!bucketName || !key) {
-      const error = new Error('File not found');
+    const { location } = foundSubmission?.files[0] ?? {};
+    if (!location) {
+      const error = new Error('No files found');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const data = await AWS.downloadFile(bucketName, key);
-    res.set({
-      'Content-Type': data.ContentType,
-      'Content-Length': data.ContentLength,
-      'Content-Disposition': foundSubmission.files[0].name,
-    });
-    data.Body.once('error', (error) => {
-      console.log(error);
-      if (!error.statusCode) {
-        error.statusCode = statusCode.INTERNAL_SERVER_ERROR;
-      }
-      next(error);
-    });
-    data.Body.pipe(res);
+    const plagiarismChecker = new CopyLeaksPlagiarismChecker();
+    const result = await plagiarismChecker.submitUrlForPlagiarismCheck(
+      location
+    );
+    const scanId = result.scanId;
+    const report = await plagiarismChecker.getPlagiarismReport(scanId);
+    console.log(report);
+    res.status(statusCode.OK).json({ report });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = statusCode.INTERNAL_SERVER_ERROR;

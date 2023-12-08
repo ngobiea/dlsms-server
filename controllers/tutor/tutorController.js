@@ -19,3 +19,4 @@ export { postGradeAssignment } from './assignments/postGradeAssignments.js';
 export { downloadSubmittedAssignment } from './assignments/downloadSubmittedAssignment.js';
 export { getStudentAnswers } from './exams/getStudentAnswers.js';
 export { postGradeStudentExamSession } from './exams/postGradeStudent.js';
+export { getPlagiarismReport } from './assignments/getPlagiarismReport.js';

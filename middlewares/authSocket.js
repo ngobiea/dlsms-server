@@ -13,7 +13,6 @@ const authSocket = async (socket, next) => {
 
     socket.userId = user._id.toString();
     socket.user = user;
-   
   } catch (e) {
     const err = new Error('not authorized');
     err.data = { content: 'Please retry later' };

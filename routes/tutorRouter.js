@@ -24,6 +24,7 @@ import {
   downloadSubmittedAssignment,
   getStudentAnswers,
   postGradeStudentExamSession,
+  getPlagiarismReport,
 } from '../controllers/tutor/tutorController.js';
 const pointsMessage = 'Points is required';
 
@@ -248,6 +249,22 @@ tutorRouter.get(
       .withMessage('Submission ID is required'),
   ],
   downloadSubmittedAssignment
+);
+
+tutorRouter.get(
+  '/plagiarism/:assignmentId/submission/:submissionId',
+  auth,
+  [
+    param('assignmentId')
+      .trim()
+      .notEmpty()
+      .withMessage('Classroom ID is required'),
+    param('submissionId')
+      .trim()
+      .notEmpty()
+      .withMessage('Submission ID is required'),
+  ],
+  getPlagiarismReport
 );
 
 export default tutorRouter;
