@@ -1,0 +1,28 @@
+version: '3.1'
+
+services:
+  mongo:
+    image: mongo
+    container_name: mongodb
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+  linux:
+    container_name: 'ubuntu-os'
+    image: 'ubuntuos'
+    restart: 'always'
+    tty: true
+    ports:
+      - '6001:6001'
+      - '10000-10100:10000-10100/udp'
+    volumes:
+      - '/home/ubuntu/projects/dlsms-server:/usr/src'
+    depends_on:
+      - mongo
+volumes:
+  data:   

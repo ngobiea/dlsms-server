@@ -1,4 +1,8 @@
-import { Copyleaks, CopyleaksURLSubmissionModel } from 'plagiarism-checker';
+import {
+  Copyleaks,
+  CopyleaksURLSubmissionModel,
+  CopyleaksFileSubmissionModel,
+} from 'plagiarism-checker';
 
 export class CopyLeaksPlagiarismChecker {
   constructor() {
@@ -36,6 +40,19 @@ export class CopyLeaksPlagiarismChecker {
       return await this.copyleaks.getResultAsync(loginResult, scanId);
     } catch (error) {
       throw new Error(`Failed to retrieve plagiarism report: ${error}`);
+    }
+  }
+  async submitFileForPlagiarismCheck(file) {
+    try {
+      const loginResult = await this.login();
+      const submission = new CopyleaksFileSubmissionModel(file);
+      return await this.copyleaks.submitFileAsync(
+        loginResult,
+        Date.now() + 1,
+        submission
+      );
+    } catch (error) {
+      throw new Error(`Failed to submit file for plagiarism check: ${error}`);
     }
   }
 }
