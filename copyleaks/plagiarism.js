@@ -3,7 +3,7 @@ import {
   CopyleaksURLSubmissionModel,
   CopyleaksFileSubmissionModel,
 } from 'plagiarism-checker';
-
+import fs from 'fs';
 export class CopyLeaksPlagiarismChecker {
   constructor() {
     this.apiKey = process.env.COPY_LEAKS_API_KEY;
@@ -42,17 +42,47 @@ export class CopyLeaksPlagiarismChecker {
       throw new Error(`Failed to retrieve plagiarism report: ${error}`);
     }
   }
-  async submitFileForPlagiarismCheck(file) {
+  async submitFileForPlagiarismCheck(
+    filePath,
+    submissionId,
+    fileName,
+    webhook
+  ) {
     try {
+      const fileContent = fs.readFileSync(filePath, { encoding: 'base64' });
       const loginResult = await this.login();
-      const submission = new CopyleaksFileSubmissionModel(file);
+      console.log(loginResult);
+      const submission = new CopyleaksFileSubmissionModel(
+        fileContent,
+        fileName,
+        {
+          sandbox: true,
+          webhooks: {
+            status: webhook,
+          },
+        }
+      );
+
       return await this.copyleaks.submitFileAsync(
         loginResult,
-        Date.now() + 1,
-        submission
+        submissionId,
+        submission,
+        {}
       );
     } catch (error) {
+      if (error.response && error.response.data) {
+        console.error(
+          'Error response from CopyLeaks API:',
+          error.response.data
+        );
+      }
       throw new Error(`Failed to submit file for plagiarism check: ${error}`);
     }
   }
 }
+
+const plagiarism = async () => {
+  const copyLeaksPlagiarismChecker = new CopyLeaksPlagiarismChecker();
+  const login = await copyLeaksPlagiarismChecker.login();
+  cop;
+};

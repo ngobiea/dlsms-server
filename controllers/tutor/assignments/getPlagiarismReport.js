@@ -27,20 +27,24 @@ export const getPlagiarismReport = async (req, res, next) => {
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    if (!foundSubmission.files.length) {
+    if (!foundSubmission?.files.length) {
       const error = new Error('No files found');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const { location } = foundSubmission?.files[0] ?? {};
-    if (!location) {
+    const { location, name } = foundSubmission?.files[0] ?? {};
+    if (!location || !name) {
       const error = new Error('No files found');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
+    const webhook = `${req.protocol}://${req.get('host')}/copyleaks/webhook'`;
     const plagiarismChecker = new CopyLeaksPlagiarismChecker();
-    const result = await plagiarismChecker.submitUrlForPlagiarismCheck(
-      location
+    const result = await plagiarismChecker.submitFileForPlagiarismCheck(
+      location,
+      submissionId,
+      name,
+      webhook,
     );
     const scanId = result.scanId;
     const report = await plagiarismChecker.getPlagiarismReport(scanId);
