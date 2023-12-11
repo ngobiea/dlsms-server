@@ -1,9 +1,12 @@
 import {
   Copyleaks,
-  CopyleaksURLSubmissionModel,
+  CopyleaksExportModel,
   CopyleaksFileSubmissionModel,
 } from 'plagiarism-checker';
 import fs from 'fs';
+import path from 'path';
+const __dirname = path.resolve();
+
 export class CopyLeaksPlagiarismChecker {
   constructor() {
     this.apiKey = process.env.COPY_LEAKS_API_KEY;
@@ -18,47 +21,33 @@ export class CopyLeaksPlagiarismChecker {
       throw new Error(`Failed to login to CopyLeaks: ${error}`);
     }
   }
-
-  async submitUrlForPlagiarismCheck(url) {
-    console.log(url);
-    try {
-      const loginResult = await this.login();
-      const submission = new CopyleaksURLSubmissionModel(url);
-      return await this.copyleaks.submitUrlAsync(
-        loginResult,
-        Date.now() + 1,
-        submission
-      );
-    } catch (error) {
-      throw new Error(`Failed to submit URL for plagiarism check: ${error}`);
-    }
-  }
-
-  async getPlagiarismReport(scanId) {
-    try {
-      const loginResult = await this.login();
-      return await this.copyleaks.getResultAsync(loginResult, scanId);
-    } catch (error) {
-      throw new Error(`Failed to retrieve plagiarism report: ${error}`);
-    }
-  }
-  async submitFileForPlagiarismCheck(
+  async submitFileForPlagiarismCheck({
     filePath,
     submissionId,
     fileName,
-    webhook
-  ) {
+    webhookUrl,
+    name,
+    title,
+  }) {
     try {
       const fileContent = fs.readFileSync(filePath, { encoding: 'base64' });
+      const logoImagePath = path.join(__dirname, 'logo', 'dlsms2.png');
+      const logoImageContent = fs.readFileSync(logoImagePath, {
+        encoding: 'base64',
+      });
       const loginResult = await this.login();
-      console.log(loginResult);
+
       const submission = new CopyleaksFileSubmissionModel(
         fileContent,
         fileName,
         {
-          sandbox: true,
           webhooks: {
-            status: webhook,
+            status: webhookUrl,
+          },
+          pdf: {
+            create: true,
+            title: `Plagiarism Report for ${name} - ${title}`,
+            largeLogo: logoImageContent,
           },
         }
       );
@@ -66,8 +55,7 @@ export class CopyLeaksPlagiarismChecker {
       return await this.copyleaks.submitFileAsync(
         loginResult,
         submissionId,
-        submission,
-        {}
+        submission
       );
     } catch (error) {
       if (error.response && error.response.data) {
@@ -77,6 +65,36 @@ export class CopyLeaksPlagiarismChecker {
         );
       }
       throw new Error(`Failed to submit file for plagiarism check: ${error}`);
+    }
+  }
+
+  async exportPlagiarismReport(scanId) {
+    try {
+      const loginResult = await this.login();
+      const model = new CopyleaksExportModel(
+        `${WEBHOOK_URL}/export/scanId/${scanId}/completion`,
+        [
+          {
+            id: scanId,
+            endpoint: `${WEBHOOK_URL}/result/${scanId}`,
+            verb: 'POST',
+          },
+        ],
+        {
+          endpoint: `${WEBHOOK_URL}/crawled-version/${scanId}`,
+          verb: 'POST',
+          
+        }
+
+      );
+      return await this.copyleaks.exportAsync(
+        loginResult,
+        scanId,
+        scanId,
+        model
+      );
+    } catch (error) {
+      throw new Error(`Failed to retrieve plagiarism report: ${error}`);
     }
   }
 }

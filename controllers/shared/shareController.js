@@ -11,3 +11,4 @@ export { getExamSessions } from './classrooms/getExamSessions.js';
 export { getAssignedAssignments } from './assignments/getAssignedAssignments.js';
 export { getAssignment } from './assignments/getAssignment.js';
 export { downloadAssignmentFile } from './assignments/downloadAssignmentFile.js';
+export { processPlagiarismSubmission } from './copyleaks/processPlagiarismSubmission.js';

@@ -12,6 +12,7 @@ import {
   getAssignedAssignments,
   getAssignment,
   downloadAssignmentFile,
+  processPlagiarismSubmission,
 } from '../controllers/shared/shareController.js';
 
 shareRouter.get('/verify-email/:token', verifyEmail);
@@ -45,4 +46,5 @@ shareRouter.get(
   getAssignment
 );
 
+shareRouter.post('/copyleaks/webhook', processPlagiarismSubmission);
 export default shareRouter;

@@ -46,10 +46,10 @@ export const getPlagiarismReport = async (req, res, next) => {
       name,
       webhook,
     );
-    const scanId = result.scanId;
-    const report = await plagiarismChecker.getPlagiarismReport(scanId);
-    console.log(report);
-    res.status(statusCode.OK).json({ report });
+    console.log(result);
+    // const report = await plagiarismChecker.getPlagiarismReport(submissionId);
+    // console.log(report);
+    res.status(statusCode.OK).json({ result });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = statusCode.INTERNAL_SERVER_ERROR;

@@ -33,26 +33,7 @@ app.use(bodyParser.json());
 app.use('/tutor', tutorRouter);
 app.use('/student', studentRouter);
 app.use(shareRoutes);
-app.post('/copyleaks/webhook', (req, res) => {
-  // Handle the incoming webhook payload here
-  const status = req.body.status; // Extract the status from the request
 
-  // Perform actions based on the status received
-  if (status === 'completed') {
-    // Handle completed status
-    console.log('Plagiarism scan completed');
-    // Add further processing or actions as needed
-  } else if (status === 'error') {
-    // Handle error status
-    console.log('Error occurred during plagiarism scan');
-    // Add error handling or notifications
-  } else {
-    // Handle other statuses if needed
-    console.log('Received status:', status);
-  }
-
-  res.sendStatus(200); // Respond with success status
-});
 
 app.use((error, _req, res, _next) => {
   console.log(error.stack);
