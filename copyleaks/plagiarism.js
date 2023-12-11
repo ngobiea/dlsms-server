@@ -28,6 +28,7 @@ export class CopyLeaksPlagiarismChecker {
     webhookUrl,
     name,
     title,
+    host,
   }) {
     try {
       const fileContent = fs.readFileSync(filePath, { encoding: 'base64' });
@@ -49,6 +50,7 @@ export class CopyLeaksPlagiarismChecker {
             title: `Plagiarism Report for ${name} - ${title}`,
             largeLogo: logoImageContent,
           },
+          developerPayload: host,
         }
       );
 
@@ -58,7 +60,7 @@ export class CopyLeaksPlagiarismChecker {
         submission
       );
     } catch (error) {
-      if (error.response && error.response.data) {
+      if (error?.response && error.response?.data) {
         console.error(
           'Error response from CopyLeaks API:',
           error.response.data
@@ -68,24 +70,32 @@ export class CopyLeaksPlagiarismChecker {
     }
   }
 
-  async exportPlagiarismReport(scanId) {
+  async exportPlagiarismReport(scanId, webhookUrl) {
     try {
       const loginResult = await this.login();
       const model = new CopyleaksExportModel(
-        `${WEBHOOK_URL}/export/scanId/${scanId}/completion`,
+        `${webhookUrl}/export/scanId/${scanId}/completion`,
         [
           {
             id: scanId,
-            endpoint: `${WEBHOOK_URL}/result/${scanId}`,
+            endpoint: `${webhookUrl}/result/${scanId}`,
             verb: 'POST',
           },
         ],
         {
-          endpoint: `${WEBHOOK_URL}/crawled-version/${scanId}`,
+          endpoint: `${webhookUrl}/crawled-version/${scanId}`,
           verb: 'POST',
-          
-        }
+        },
+        null,
 
+        {
+          endpoint: `${webhookUrl}/export/${scanId}/pdf-report`,
+          verb: 'POST',
+          headers: [
+            ['key', 'value'],
+            ['key2', 'value2'],
+          ],
+        }
       );
       return await this.copyleaks.exportAsync(
         loginResult,
@@ -98,9 +108,3 @@ export class CopyLeaksPlagiarismChecker {
     }
   }
 }
-
-const plagiarism = async () => {
-  const copyLeaksPlagiarismChecker = new CopyLeaksPlagiarismChecker();
-  const login = await copyLeaksPlagiarismChecker.login();
-  cop;
-};

@@ -6,6 +6,10 @@ import Message from '../../../model/Message.js';
 import Classroom from '../../../model/Classroom.js';
 import User from '../../../model/User.js';
 import { handlePostAssignments } from '../../../socketHandlers/tutors/handlePostAssignments.js';
+import path from 'path';
+const __dirname = path.resolve();
+
+import { createFolderIfNotExists } from '../../../util/createFolder.js';
 export const postAssignment = async (req, res, next) => {
   try {
     const { classroomId } = req.params;
@@ -47,6 +51,7 @@ export const postAssignment = async (req, res, next) => {
             };
             const newAssignment = new Assignment(assignment);
             await newAssignment.save();
+
             const message = new Message({
               classroomId,
               sender: req.userId,

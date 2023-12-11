@@ -1,7 +1,9 @@
 import Assignment from '../../../model/Assignment.js';
 import { statusCode } from '../../../util/statusCodes.js';
 import { validationResult } from 'express-validator';
-import { AWS } from '../../../util/aws/AWS.js';
+import fs from 'fs';
+import path from 'path';
+const __dirname = path.resolve();
 export const downloadSubmittedAssignment = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -31,26 +33,23 @@ export const downloadSubmittedAssignment = async (req, res, next) => {
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const { bucketName, key } = foundSubmission?.files[0] ?? {};
-    if (!bucketName || !key) {
+    const { key, name } = foundSubmission?.files[0] ?? {};
+    if (!key) {
       const error = new Error('File not found');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const data = await AWS.downloadFile(bucketName, key);
+    const filePath = path.join(__dirname, key);
+    if (!fs.existsSync(filePath)) {
+      const error = new Error('File not found');
+      error.statusCode = statusCode.NOT_FOUND;
+      throw error;
+    }
+
     res.set({
-      'Content-Type': data.ContentType,
-      'Content-Length': data.ContentLength,
-      'Content-Disposition': foundSubmission.files[0].name,
+      filename: name,
     });
-    data.Body.once('error', (error) => {
-      console.log(error);
-      if (!error.statusCode) {
-        error.statusCode = statusCode.INTERNAL_SERVER_ERROR;
-      }
-      next(error);
-    });
-    data.Body.pipe(res);
+    res.download(filePath);
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = statusCode.INTERNAL_SERVER_ERROR;

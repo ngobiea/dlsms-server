@@ -1,8 +1,9 @@
 import Assignment from '../../../model/Assignment.js';
 import { statusCode } from '../../../util/statusCodes.js';
 import { validationResult } from 'express-validator';
-import { CopyLeaksPlagiarismChecker } from '../../../copyleaks/plagiarism.js';
-
+import fs from 'fs';
+import path from 'path';
+const __dirname = path.resolve();
 export const getPlagiarismReport = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -32,24 +33,24 @@ export const getPlagiarismReport = async (req, res, next) => {
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const { location, name } = foundSubmission?.files[0] ?? {};
-    if (!location || !name) {
+    const { key, name } = foundSubmission?.files[0] ?? {};
+
+    if (!key || !name) {
       const error = new Error('No files found');
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const webhook = `${req.protocol}://${req.get('host')}/copyleaks/webhook'`;
-    const plagiarismChecker = new CopyLeaksPlagiarismChecker();
-    const result = await plagiarismChecker.submitFileForPlagiarismCheck(
-      location,
-      submissionId,
-      name,
-      webhook,
+    const filePath = path.join(
+      __dirname,
+      'assignments/reports',
+      '6576a620c2de88e8a54e13c7-report.pdf'
     );
-    console.log(result);
-    // const report = await plagiarismChecker.getPlagiarismReport(submissionId);
-    // console.log(report);
-    res.status(statusCode.OK).json({ result });
+    if (!fs.existsSync(filePath)) {
+      const error = new Error('File not found');
+      error.statusCode = statusCode.NOT_FOUND;
+      throw error;
+    }
+    res.download(filePath);
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = statusCode.INTERNAL_SERVER_ERROR;

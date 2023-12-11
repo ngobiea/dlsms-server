@@ -1,23 +1,13 @@
-import { CopyLeaksPlagiarismChecker } from '../../../copyleaks/plagiarism.js';
+import { statusCode } from '../../../util/statusCodes.js';
+export const processPlagiarismSubmission = async (req, res, _next) => {
+  const { status } = req.body;
 
-export const processPlagiarismSubmission = async (req, res, next) => {
-  // Handle the incoming webhook payload here
-  const status = req.body.status; // Extract the status from the request
-  console.log(req);
-  // Perform actions based on the status received
-  if (status === 'completed') {
-    // Handle completed status
+  if (status === 0) {
     console.log('Plagiarism scan completed');
-
-    // Add further processing or actions as needed
-  } else if (status === 'error') {
-    // Handle error status
+  } else if (status === 1) {
     console.log('Error occurred during plagiarism scan');
-    // Add error handling or notifications
   } else {
-    // Handle other statuses if needed
     console.log('Received status:', status);
   }
-
-  res.sendStatus(200);
+  res.sendStatus(statusCode.OK);
 };

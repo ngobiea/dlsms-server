@@ -51,9 +51,10 @@ export const postSubmitAssignment = async (req, res, next) => {
                 assignment.submissions.length - 1
               ]._id.toString(),
             fileName: submission.files[0].name,
-            webhookUrl,
-            name: user.firstName + ' ' + user.lastName,
+            name: `${user.firstName} ${user.lastName}`,
             title: assignment.title,
+            host: `${req.protocol}://${req.get('host')}`,
+            webhookUrl,
           });
         } catch (error) {
           if (!error.statusCode) {
