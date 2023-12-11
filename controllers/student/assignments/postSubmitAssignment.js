@@ -20,7 +20,6 @@ export const postSubmitAssignment = async (req, res, next) => {
       handleValidationErrors(req, res, async () => {
         try {
           const { files } = req;
-          console.log(files);
           const submission = {
             files:
               files?.map((file) => ({
