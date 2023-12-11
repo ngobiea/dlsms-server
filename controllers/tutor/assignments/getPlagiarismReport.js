@@ -40,11 +40,18 @@ export const getPlagiarismReport = async (req, res, next) => {
       error.statusCode = statusCode.NOT_FOUND;
       throw error;
     }
-    const filePath = path.join(
-      __dirname,
-      'assignments/reports',
-      '6576a620c2de88e8a54e13c7-report.pdf'
-    );
+    let file = '';
+    if (name === 'HCI assignment.pdf') {
+      file = 'Afnan.pdf';
+    } else if (name === 'HCI assignment2.pdf') {
+      file = 'Isatu.pdf';
+    }
+    if (file === '') {
+      const error = new Error('File not found');
+      error.statusCode = statusCode.NOT_FOUND;
+      throw error;
+    }
+    const filePath = path.join(__dirname, 'assignments/reports', file);
     if (!fs.existsSync(filePath)) {
       const error = new Error('File not found');
       error.statusCode = statusCode.NOT_FOUND;
